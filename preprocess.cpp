@@ -23,20 +23,14 @@ static void read_params(const struct SW_Data_Packet* data_packet, uint8_t &bank,
 
 }
 
-static void read_samples(const struct SW_Data_Packet* data_packet,
+static void read_samples(const vec_uint16_16 * samples,
         hls::stream<vec_uint16_16>& inStreamSamples) {
-//#pragma HLS array_partition variable=inStreamSamples factor=256
     //int ped_sample_idx = data_packet->starting_sample_number;
     //uint8_t bank = data_packet->bank;
 
     //changed the order: read horizontally -> read vertically
     read_samples_loop: for (int i = 0; i < NUM_SAMPLES; i++) {
-        vec_uint16_16 sample;
-    	read_channels_loop: for (int j = 0; j < NUM_CHANNELS; j++) {
-#pragma HLS PIPELINE II=1
-#pragma HLS UNROLL factor=16
-            sample[j] = data_packet->samples[i][j];
-        }
+        vec_uint16_16 sample = samples[i];
         inStreamSamples << sample;
 
     }
@@ -141,7 +135,7 @@ static void write_integral_result(int32_t* output_integrals,
     }
 }
 
-void dataflow( const struct SW_Data_Packet * input_data_packet,
+void dataflow(const vec_uint16_16 * samples,
         const vec_uint16_16 *input_all_peds, // Read-Only Pedestals
         const int * bounds, // Read-Only Integral Bounds
         int32_t *output_integrals ,      // Output Result (Integrals)
@@ -157,7 +151,7 @@ void dataflow( const struct SW_Data_Packet * input_data_packet,
 	#pragma HLS STREAM variable= outStreamIntegral depth=64
 
 	#pragma HLS DATAFLOW
-	read_samples(input_data_packet, inStreamSamples);
+	read_samples(samples, inStreamSamples);
 	ped_subtract(bank, start_sample_number, inStreamSamples, input_all_peds, outStreamPeds);
 	integrals(base_addr, outStreamPeds, bounds, outStreamIntegral);
 	write_integral_result(output_integrals, outStreamIntegral);
@@ -186,6 +180,6 @@ extern "C" {
         int8_t base_addr;
 
         read_params(input_data_packet, bank, start_sample_number, base_addr);
-        dataflow(input_data_packet, input_all_peds, bounds, output_integrals, bank, start_sample_number, base_addr);
+        dataflow(input_data_packet->samples, input_all_peds, bounds, output_integrals, bank, start_sample_number, base_addr);
     }
 }

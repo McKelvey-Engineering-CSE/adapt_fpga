@@ -27,7 +27,7 @@ struct SW_Data_Packet {
     uint8_t starting_sample_number; // 8 bits
     uint8_t number_of_missed_triggers; // 8 bits
     uint8_t state_machine_status; // 8 bits
-    uint16_t samples[NUM_SAMPLES][NUM_CHANNELS]; // Variable size?
+    vec_uint16_16 samples[NUM_SAMPLES]; // Variable size?
     // Looks like N samples for 16 channels (so 1 ASIC)
     uint16_t omega; // End Constant 0x0E6A
 };
