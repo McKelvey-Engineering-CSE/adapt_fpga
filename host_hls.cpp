@@ -1,7 +1,6 @@
 // char: 8 bit, short: 16 bit, long: 32 bit
 
-#define NUM_CHANNELS 16
-#define NUM_SAMPLES 256 // N
+
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
 
 #include <vector>
@@ -17,28 +16,6 @@
 #include <stdlib.h>
 
 #include "preprocess.h"
-
-/*
- Mimics incoming data packet in C types.
-*/
-struct SW_Data_Packet {
-    uint16_t alpha; // Start Constant 0xA1FA
-    uint8_t i2c_address; // 3 bits
-    uint8_t conf_address; // 4 bits
-    uint8_t bank; // 1 bit, A or B
-    uint8_t fine_time; // 8 bits, sample number when trigger arrives
-    uint32_t coarse_time; // 32 bits
-    uint16_t trigger_number; // 16 bits
-    uint8_t samples_after_trigger; // 8 bits
-    uint8_t look_back_samples; // 8 bits
-    uint8_t samples_to_be_read; // 8 bits
-    uint8_t starting_sample_number; // 8 bits
-    uint8_t number_of_missed_triggers; // 8 bits
-    uint8_t state_machine_status; // 8 bits
-    uint16_t samples[NUM_SAMPLES][NUM_CHANNELS]; // Variable size?
-    // Looks like N samples for 16 channels (so 1 ASIC)
-    uint16_t omega; // End Constant 0x0E6A
-};
 
 int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
 
@@ -105,7 +82,7 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
     return 0;
 }
 
-int peds_dat_to_arrays(int fd, uint16_t * all_peds){
+int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
     FILE * fp = fdopen(fd, "r");
     if(fp == NULL) {
         perror("fdopen");
@@ -121,7 +98,7 @@ int peds_dat_to_arrays(int fd, uint16_t * all_peds){
         }
         sscanf(line, "%hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu", &sample_num, &peds[0], &peds[1], &peds[2], &peds[3], &peds[4], &peds[5], &peds[6], &peds[7], &peds[8], &peds[9], &peds[10], &peds[11], &peds[12], &peds[13], &peds[14], &peds[15]);
         for(int j = 0; j < NUM_CHANNELS; j++) {
-            all_peds[0*(NUM_CHANNELS*NUM_SAMPLES) + i*NUM_CHANNELS + j] = peds[j];
+            all_peds[0 * NUM_SAMPLES + i][j] = peds[j];
         }
     }
     for(int i = 0; i < NUM_SAMPLES; i++) {
@@ -131,14 +108,15 @@ int peds_dat_to_arrays(int fd, uint16_t * all_peds){
         }
         sscanf(line, "%hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu", &sample_num, &peds[0], &peds[1], &peds[2], &peds[3], &peds[4], &peds[5], &peds[6], &peds[7], &peds[8], &peds[9], &peds[10], &peds[11], &peds[12], &peds[13], &peds[14], &peds[15]);
         for(int j = 0; j < NUM_CHANNELS; j++) {
-            all_peds[1 * (NUM_CHANNELS * NUM_SAMPLES) + i * NUM_CHANNELS + j] = peds[j];
+            all_peds[1 * NUM_SAMPLES + i][j] = peds[j];
         }
     }
     fclose(fp);
     return 0;
 }
 
-int initialize_inputs(struct SW_Data_Packet * data_packet, uint16_t * all_peds) {
+int initialize_inputs(struct SW_Data_Packet * data_packet,
+    vec_uint16_16 * all_peds) {
     int data_packet_fd = open("./EventStream.dat", 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
@@ -217,12 +195,12 @@ int produce_output(const char ** bounds, int32_t *integrals, struct SW_Data_Pack
 int main()
 {
     struct SW_Data_Packet input_data_packet;
-    uint16_t input_all_peds[2*NUM_SAMPLES*NUM_CHANNELS];
+    vec_uint16_16 input_all_peds[2*NUM_SAMPLES];
     int bounds[8];
     int32_t output_integrals[4*NUM_CHANNELS];
 
     // Initialize the data used in the test
-    initialize_inputs(&input_data_packet, (uint16_t *) input_all_peds);
+    initialize_inputs(&input_data_packet, (vec_uint16_16 *) input_all_peds);
 
     const char * bounds_strings[8] = {"-5", "5", "-10", "10", "-15", "15", "-20", "20"};
     bounds[0] = atoi(bounds_strings[0]);
@@ -234,7 +212,7 @@ int main()
     bounds[6] = atoi(bounds_strings[6]);
     bounds[7] = atoi(bounds_strings[7]);
 
-    preprocess(&input_data_packet, (uint16_t *) input_all_peds, bounds, (int32_t *) output_integrals);
+    preprocess(&input_data_packet, input_all_peds, bounds, (int32_t *) output_integrals);
 
     produce_output(bounds_strings, (int32_t *) output_integrals, &input_data_packet);
 

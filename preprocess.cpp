@@ -6,38 +6,13 @@
 #include <stdlib.h>
 #include <ap_int.h>
 #include <hls_stream.h>
-#include <hls_vector.h>
-typedef hls::vector<int16_t, 16> vec_int16_16;
 
 // char: 8 bit, short: 16 bit, long: 32 bit
 #include "preprocess.h"
 
-#define NUM_CHANNELS 16
-#define NUM_SAMPLES 256 // N
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
 #define SIZE 4096 // SIZE OF FIFO STREAM
 #define NUM_INTEGRALS 4
-/*
- Mimics incoming data packet in C types.
-*/
-struct SW_Data_Packet {
-    uint16_t alpha; // Start Constant 0xA1FA
-    uint8_t i2c_address; // 3 bits
-    uint8_t conf_address; // 4 bits
-    uint8_t bank; // 1 bit, A or B
-    uint8_t fine_time; // 8 bits, sample number when trigger arrives
-    uint32_t coarse_time; // 32 bits
-    uint16_t trigger_number; // 16 bits
-    uint8_t samples_after_trigger; // 8 bits
-    uint8_t look_back_samples; // 8 bits
-    uint8_t samples_to_be_read; // 8 bits
-    uint8_t starting_sample_number; // 8 bits
-    uint8_t number_of_missed_triggers; // 8 bits
-    uint8_t state_machine_status; // 8 bits
-    uint16_t samples[NUM_SAMPLES][NUM_CHANNELS]; // Variable size?
-    // Looks like N samples for 16 channels (so 1 ASIC)
-    uint16_t omega; // End Constant 0x0E6A
-};
 
 
 static void read_params(const struct SW_Data_Packet* data_packet, uint8_t &bank,
@@ -48,17 +23,21 @@ static void read_params(const struct SW_Data_Packet* data_packet, uint8_t &bank,
 
 }
 
-static void read_samples(const struct SW_Data_Packet* data_packet, hls::stream<uint16_t>& inStreamSamples) {
+static void read_samples(const struct SW_Data_Packet* data_packet,
+        hls::stream<vec_uint16_16>& inStreamSamples) {
 //#pragma HLS array_partition variable=inStreamSamples factor=256
     //int ped_sample_idx = data_packet->starting_sample_number;
     //uint8_t bank = data_packet->bank;
 
     //changed the order: read horizontally -> read vertically
-    for (int i = 0; i < NUM_SAMPLES; i++) {
-    	for (int j = 0; j < NUM_CHANNELS; j++) {
-
-            inStreamSamples << data_packet->samples[i][j];
+    read_samples_loop: for (int i = 0; i < NUM_SAMPLES; i++) {
+        vec_uint16_16 sample;
+    	read_channels_loop: for (int j = 0; j < NUM_CHANNELS; j++) {
+#pragma HLS PIPELINE II=1
+#pragma HLS UNROLL factor=16
+            sample[j] = data_packet->samples[i][j];
         }
+        inStreamSamples << sample;
 
     }
 }
@@ -67,28 +46,41 @@ static void read_samples(const struct SW_Data_Packet* data_packet, hls::stream<u
 
 // not using stream for peds, so 
 
-static void ped_subtract(const uint8_t bank, const uint16_t start_sample_number, hls::stream<uint16_t>& inStreamSamples, const uint16_t * all_peds, hls::stream<vec_int16_16>& outStreamPeds) {
+static void ped_subtract(const uint8_t bank,
+        const uint16_t start_sample_number,
+        hls::stream<vec_uint16_16>& inStreamSamples,
+        const vec_uint16_16 * all_peds,
+        hls::stream<vec_int16_16>& outStreamPeds) {
     
     
-    for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
+    ped_sub_loop: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
+#pragma HLS PIPELINE II=1
+#pragma HLS UNROLL factor=16
+        vec_uint16_16 svec = inStreamSamples.read();
         vec_int16_16 rvec;
-        for (uint16_t c = 0; c < NUM_CHANNELS; ++c) {
-            uint16_t x = inStreamSamples.read();
 
-            uint8_t idx = (s + start_sample_number) % NUM_SAMPLES;
+        uint8_t idx = (s + start_sample_number) % NUM_SAMPLES;
 
-            uint16_t p = all_peds[bank * (NUM_CHANNELS * NUM_SAMPLES) + idx * NUM_CHANNELS + c];
+        vec_uint16_16 pvec = all_peds[bank * NUM_SAMPLES + idx];
 
-            int16_t r = (int16_t)x - (int16_t)p;
+        // int16_t r = (int16_t)x - (int16_t)p;
+        // rvec[c] = r;
+        ped_sub_channel_loop: for (uint16_t c = 0; c < NUM_SAMPLES; ++c) {
+            uint16_t s = svec[c];
+            uint16_t p = pvec[c];
+            int16_t r = (int16_t)s - (int16_t)p;
             rvec[c] = r;
-
         }
+
         outStreamPeds << rvec;
     }
 }
 
 
-static void integrals(int8_t base_addr, hls::stream<vec_int16_16>& outStreamPeds, const int* bounds, hls::stream<vec_int16_16>& outStreamIntegral) {
+static void integrals(const int8_t base_addr,
+        hls::stream<vec_int16_16>& outStreamPeds,
+        const int* bounds,
+        hls::stream<vec_int16_16>& outStreamIntegral) {
 
     vec_int16_16 integrals[NUM_INTEGRALS];
     vec_int16_16 current;
@@ -96,8 +88,8 @@ static void integrals(int8_t base_addr, hls::stream<vec_int16_16>& outStreamPeds
     integral_samples_loop: for (int i = 0; i<NUM_SAMPLES; i++){
         current = outStreamPeds.read();
     	integral_bounds_loop: for (int k =0; k<NUM_INTEGRALS; k++){
-// #pragma HLS PIPELINE II=1
-// #pragma HLS UNROLL factor=8
+#pragma HLS PIPELINE II=1
+#pragma HLS UNROLL factor=4
 
 
             vec_int16_16 integral = (i == 0) ? 0 : integrals[k];
@@ -137,7 +129,8 @@ static void integrals(int8_t base_addr, hls::stream<vec_int16_16>& outStreamPeds
 }
 
 
-static void write_integral_result(int32_t* output_integrals, hls::stream<vec_int16_16>& outStreamIntegrals) {
+static void write_integral_result(int32_t* output_integrals,
+        hls::stream<vec_int16_16>& outStreamIntegrals) {
     
     vec_int16_16 current;
     for (int i = 0; i < NUM_INTEGRALS; i++) {
@@ -148,18 +141,18 @@ static void write_integral_result(int32_t* output_integrals, hls::stream<vec_int
     }
 }
 
-void dataflow( struct SW_Data_Packet * input_data_packet,
-        uint16_t *input_all_peds, // Read-Only Pedestals
-        int * bounds, // Read-Only Integral Bounds
+void dataflow( const struct SW_Data_Packet * input_data_packet,
+        const vec_uint16_16 *input_all_peds, // Read-Only Pedestals
+        const int * bounds, // Read-Only Integral Bounds
         int32_t *output_integrals ,      // Output Result (Integrals)
-		uint8_t bank,
-uint8_t start_sample_number,
-int8_t base_addr) {
+		const uint8_t bank,
+        const uint8_t start_sample_number,
+        const int8_t base_addr) {
 	//array of stream declaration
-	static hls::stream<uint16_t> inStreamSamples;
+	static hls::stream<vec_uint16_16> inStreamSamples;
 	static hls::stream<vec_int16_16> outStreamPeds;
 	static hls::stream<vec_int16_16> outStreamIntegral;
-	#pragma HLS STREAM variable= inStreamSamples depth=4096
+	#pragma HLS STREAM variable= inStreamSamples depth=256
 	#pragma HLS STREAM variable= outStreamPeds depth=256
 	#pragma HLS STREAM variable= outStreamIntegral depth=64
 
@@ -174,7 +167,7 @@ int8_t base_addr) {
 extern "C" {
     void preprocess(
 	        struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
-	        uint16_t *input_all_peds, // Read-Only Pedestals
+	        vec_uint16_16 *input_all_peds, // Read-Only Pedestals
             int * bounds, // Read-Only Integral Bounds
 	        int32_t *output_integrals       // Output Result (Integrals)
 	        )
@@ -184,7 +177,7 @@ extern "C" {
 //#pragma HLS INTERFACE m_axi depth=8192 port=input_all_peds bundle=aximm2
 //#pragma HLS INTERFACE m_axi depth=8 port=bounds bundle=aximm3
 #pragma HLS INTERFACE m_axi depth=256 port=output_integrals bundle=aximm1
-#pragma HLS INTERFACE mode=bram depth=8192 port=input_all_peds
+#pragma HLS INTERFACE mode=bram depth=512 port=input_all_peds
 #pragma HLS INTERFACE mode=bram depth=8 port=bounds
 
         //int16_t ped_sub_results[NUM_SAMPLES][NUM_CHANNELS];
