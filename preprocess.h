@@ -1,14 +1,19 @@
 #ifndef PREPROCESS_H
 #define PREPROCESS_H
 
-
-#include <hls_vector.h>
-typedef hls::vector<int16_t, 16> vec_int16_16;
-typedef hls::vector<uint16_t, 16> vec_uint16_16;
+extern "C" {
+    void preprocess(
+	        struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
+	        uint16_t *input_all_peds, // Read-Only Pedestals
+            int * bounds, // Read-Only Integral Bounds
+	        int32_t *output_integrals       // Output Result (Integrals)
+	);
+}
 
 #define NUM_CHANNELS 16
 #define NUM_SAMPLES 256 // N
-
+#define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
+#define NUM_INTEGRALS 4
 
 /*
  Mimics incoming data packet in C types.
@@ -27,19 +32,9 @@ struct SW_Data_Packet {
     uint8_t starting_sample_number; // 8 bits
     uint8_t number_of_missed_triggers; // 8 bits
     uint8_t state_machine_status; // 8 bits
-    vec_uint16_16 samples[NUM_SAMPLES]; // Variable size?
+    uint16_t samples[NUM_SAMPLES][NUM_CHANNELS]; // Variable size?
     // Looks like N samples for 16 channels (so 1 ASIC)
     uint16_t omega; // End Constant 0x0E6A
 };
-
-extern "C" {
-    void preprocess(
-	        struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
-	        vec_uint16_16 *input_all_peds, // Read-Only Pedestals
-            int * bounds, // Read-Only Integral Bounds
-	        int32_t *output_integrals       // Output Result (Integrals)
-	);
-}
-
 
 #endif
