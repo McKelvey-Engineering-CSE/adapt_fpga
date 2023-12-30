@@ -27,6 +27,7 @@ int integrate(SW_Data_Packet * pkt, int *bounds, int32_t *integrals) {
 
     //Assume fine_time > starting_sample_number, so base_addr is positive
     int base_addr = pkt->fine_time - pkt->starting_sample_number;
+    if(base_addr < 0) base_addr += NUM_SAMPLES;
 
     for (int s = 0; s < NUM_SAMPLES; ++s) {
         int x = s - base_addr;
@@ -95,13 +96,24 @@ int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_nu
     return 0;
 }
 
+int zero_suppress(int32_t * integrals, int32_t * thresholds ) {
+    for(unsigned i = 0; i < NUM_INTEGRALS; ++i) {
+        for(unsigned c = 0; c < NUM_CHANNELS; ++c) {
+            if(integrals[i*NUM_CHANNELS+c] < thresholds[i]) {
+                integrals[i*NUM_CHANNELS+c] = 0;
+            }
+        }
+    }
+    return 0;
+}
 
 extern "C" {
     void preprocess(
 	        struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
 	        uint16_t *input_all_peds, // Read-Only Pedestals
             int * bounds, // Read-Only Integral Bounds
-	        int32_t *output_integrals       // Output Result (Integrals)
+	        int32_t *output_integrals,       // Output Result (Integrals)
+            int32_t *zero_thresholds
 	        )
     {
 #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet bundle=aximm1
@@ -121,6 +133,7 @@ extern "C" {
         // integrate_bad(&base_addr, bounds[4], bounds[5], 2, output_integrals);
         // integrate_bad(&base_addr, bounds[6], bounds[7], 3, output_integrals);
         
+        zero_suppress(output_integrals, zero_thresholds);
 
     }
 }

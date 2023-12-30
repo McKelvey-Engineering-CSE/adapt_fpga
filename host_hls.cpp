@@ -212,7 +212,9 @@ int main()
     bounds[6] = atoi(bounds_strings[6]);
     bounds[7] = atoi(bounds_strings[7]);
 
-    preprocess(&input_data_packet, (uint16_t *) input_all_peds, bounds, (int32_t *) output_integrals);
+    int32_t zero_thresholds[NUM_INTEGRALS] = {-1000, -1000, -1000, 5};
+
+    preprocess(&input_data_packet, (uint16_t *) input_all_peds, bounds, (int32_t *) output_integrals, zero_thresholds);
 
     produce_output(bounds_strings, (int32_t *) output_integrals, &input_data_packet);
 
