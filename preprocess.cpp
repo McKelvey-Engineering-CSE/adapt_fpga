@@ -159,8 +159,8 @@ extern "C" {
             struct Centroid *centroid // Output Centroid
 	        )
     {
-#pragma HLS INTERFACE m_axi depth=5 port=input_data_packet bundle=aximm1
-#pragma HLS INTERFACE m_axi depth=40960 port=input_all_peds bundle=aximm2
+#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet bundle=aximm1
+#pragma HLS INTERFACE m_axi depth=8192 port=input_all_peds bundle=aximm2
 #pragma HLS INTERFACE m_axi depth=8 port=bounds bundle=aximm3
 #pragma HLS INTERFACE m_axi depth=4 port=zero_thresholds bundle=aximm4
 #pragma HLS INTERFACE m_axi depth=64 port=output_integrals bundle=aximm5

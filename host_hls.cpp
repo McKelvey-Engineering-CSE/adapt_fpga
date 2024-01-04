@@ -221,9 +221,9 @@ int main()
 
     preprocess( (SW_Data_Packet *) input_data_packet,
                 (uint16_t *) input_all_peds,
-                bounds, zero_thresholds,
+                (int *) bounds, (int32_t *) zero_thresholds,
                 (int32_t *) output_integrals,
-                (Centroid *) &centroid
+                (struct Centroid *) &centroid
                 );
 
     int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
