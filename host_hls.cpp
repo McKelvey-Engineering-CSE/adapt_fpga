@@ -194,13 +194,17 @@ int produce_output(const char ** bounds, int32_t *integrals, struct SW_Data_Pack
 // ------------------------------------------------------------------------------------
 int main()
 {
-    struct SW_Data_Packet input_data_packet;
-    uint16_t input_all_peds[2*NUM_SAMPLES*NUM_CHANNELS];
+    SW_Data_Packet input_data_packet[NUM_ALPHAS];
+    uint16_t input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES*NUM_CHANNELS];
     int bounds[2*NUM_INTEGRALS];
-    int32_t output_integrals[NUM_INTEGRALS*NUM_CHANNELS];
+    int32_t output_integrals[NUM_ALPHAS][NUM_INTEGRALS*NUM_CHANNELS];
+    Centroid centroid;
 
     // Initialize the data used in the test
-    initialize_inputs(&input_data_packet, (uint16_t *) input_all_peds);
+    for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+        initialize_inputs(&input_data_packet[alpha],
+                         (uint16_t *) input_all_peds[alpha]);
+    }
 
     const char * bounds_strings[8] = {"-5", "5", "-10", "10", "-15", "15", "-20", "20"};
     bounds[0] = atoi(bounds_strings[0]);
@@ -214,9 +218,31 @@ int main()
 
     int32_t zero_thresholds[NUM_INTEGRALS] = {-1000, -1000, -1000, 5};
 
-    preprocess(&input_data_packet, (uint16_t *) input_all_peds, bounds, (int32_t *) output_integrals, zero_thresholds);
+    preprocess( (SW_Data_Packet *) input_data_packet,
+                (uint16_t *) input_all_peds,
+                bounds, zero_thresholds,
+                (int32_t *) output_integrals,
+                (Centroid *) &centroid
+                );
 
-    produce_output(bounds_strings, (int32_t *) output_integrals, &input_data_packet);
+    int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
+    if (output_fd == -1) {
+        perror("open");
+    }
+
+    for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+        // produce_output(bounds_strings,
+        //                (int32_t *) output_integrals[alpha],
+        //                (SW_Data_Packet *) &input_data_packet[alpha]);
+    
+        write_output(output_fd,
+                     bounds_strings,
+                     (int32_t *) output_integrals[alpha],
+                     (SW_Data_Packet *) &input_data_packet[alpha]);
+    }
+
+    write_header(output_fd, "centroid_position", centroid.position);
+    write_header(output_fd, "centroid_signal", centroid.signal);
 
     return 0;
 }

@@ -6,8 +6,9 @@ extern "C" {
 	        struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
 	        uint16_t *input_all_peds, // Read-Only Pedestals
             int * bounds, // Read-Only Integral Bounds
+            int32_t *zero_thresholds, // Read-Only Thresholds for zero-suppression
 	        int32_t *output_integrals,       // Output Result (Integrals)
-			int32_t * zero_thresholds
+            struct Centroid *centroid // Output Centroid
 	);
 }
 
@@ -15,6 +16,7 @@ extern "C" {
 #define NUM_SAMPLES 256 // N
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
 #define NUM_INTEGRALS 4
+#define NUM_ALPHAS 5
 
 /*
  Mimics incoming data packet in C types.
@@ -37,5 +39,11 @@ struct SW_Data_Packet {
     // Looks like N samples for 16 channels (so 1 ASIC)
     uint16_t omega; // End Constant 0x0E6A
 };
+
+struct Centroid {
+    uint16_t position;
+    uint16_t signal;
+};
+
 
 #endif
