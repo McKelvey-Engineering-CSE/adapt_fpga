@@ -195,15 +195,16 @@ int produce_output(const char ** bounds, int32_t *integrals, struct SW_Data_Pack
 int main()
 {
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
-    uint16_t input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES*NUM_CHANNELS];
+    uint16_t input_all_peds[NUM_ALPHAS*2*NUM_SAMPLES*NUM_CHANNELS];
     int bounds[2*NUM_INTEGRALS];
-    int32_t output_integrals[NUM_ALPHAS][NUM_INTEGRALS*NUM_CHANNELS];
+    int32_t output_integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
     Centroid centroid;
 
     // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-        initialize_inputs(&input_data_packet[alpha],
-                         (uint16_t *) input_all_peds[alpha]);
+        unsigned ped_offset = alpha * 2 * NUM_SAMPLES * NUM_CHANNELS;
+        initialize_inputs(input_data_packet + alpha,
+                         input_all_peds + ped_offset);
     }
 
     const char * bounds_strings[8] = {"-5", "5", "-10", "10", "-15", "15", "-20", "20"};
@@ -234,11 +235,12 @@ int main()
         // produce_output(bounds_strings,
         //                (int32_t *) output_integrals[alpha],
         //                (SW_Data_Packet *) &input_data_packet[alpha]);
-    
+
+        unsigned integral_offset = alpha * NUM_INTEGRALS * NUM_CHANNELS;
         write_output(output_fd,
                      bounds_strings,
-                     (int32_t *) output_integrals[alpha],
-                     (SW_Data_Packet *) &input_data_packet[alpha]);
+                     output_integrals + integral_offset,
+                     input_data_packet + alpha);
     }
 
     write_header(output_fd, "centroid_position", centroid.position);
