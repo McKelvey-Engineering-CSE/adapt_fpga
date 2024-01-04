@@ -16,7 +16,7 @@ extern "C" {
 #define NUM_SAMPLES 256 // N
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
 #define NUM_INTEGRALS 4
-#define NUM_ALPHAS 1
+#define NUM_ALPHAS 5
 
 /*
  Mimics incoming data packet in C types.
