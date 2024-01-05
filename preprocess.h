@@ -1,6 +1,12 @@
 #ifndef PREPROCESS_H
 #define PREPROCESS_H
 
+#include <hls_vector.h>
+typedef hls::vector<int16_t, 16> vec_int16_16;
+typedef hls::vector<uint16_t, 16> vec_uint16_16;
+typedef hls::vector<int32_t, 16> vec_int32_16;
+typedef hls::vector<uint32_t, 16> vec_uint32_16;
+
 #define NUM_CHANNELS 16
 #define NUM_SAMPLES 256 // N
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
@@ -10,7 +16,7 @@
 extern "C" {
     void preprocess(
 	        const struct SW_Data_Packet input_data_packet[NUM_ALPHAS], // Read-Only Data Packet Struct
-	        const uint16_t *input_all_peds, // Read-Only Pedestals
+	        const vec_uint16_16 *input_all_peds, // Read-Only Pedestals
             const int16_t bounds[2*NUM_INTEGRALS], // Read-Only Integral Bounds
             const int32_t *zero_thresholds, // Read-Only Thresholds for zero-suppression
 	        int32_t *output_integrals,       // Output Result (Integrals)
@@ -35,7 +41,7 @@ struct SW_Data_Packet {
     uint8_t starting_sample_number; // 8 bits
     uint8_t number_of_missed_triggers; // 8 bits
     uint8_t state_machine_status; // 8 bits
-    uint16_t samples[NUM_SAMPLES][NUM_CHANNELS]; // Variable size?
+    vec_uint16_16 samples[NUM_SAMPLES]; // Variable size?
     // Looks like N samples for 16 channels (so 1 ASIC)
     uint16_t omega; // End Constant 0x0E6A
 };

@@ -83,7 +83,7 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
     return 0;
 }
 
-int peds_dat_to_arrays(int fd, uint16_t * all_peds){
+int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
     FILE * fp = fdopen(fd, "r");
     if(fp == NULL) {
         perror("fdopen");
@@ -99,7 +99,7 @@ int peds_dat_to_arrays(int fd, uint16_t * all_peds){
         }
         sscanf(line, "%hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu", &sample_num, &peds[0], &peds[1], &peds[2], &peds[3], &peds[4], &peds[5], &peds[6], &peds[7], &peds[8], &peds[9], &peds[10], &peds[11], &peds[12], &peds[13], &peds[14], &peds[15]);
         for(int j = 0; j < NUM_CHANNELS; j++) {
-            all_peds[0*(NUM_SAMPLES*NUM_CHANNELS) + i*NUM_CHANNELS + j] = peds[j];
+            all_peds[0 * NUM_SAMPLES + i][j] = peds[j];
         }
     }
     for(int i = 0; i < NUM_SAMPLES; i++) {
@@ -109,14 +109,14 @@ int peds_dat_to_arrays(int fd, uint16_t * all_peds){
         }
         sscanf(line, "%hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu", &sample_num, &peds[0], &peds[1], &peds[2], &peds[3], &peds[4], &peds[5], &peds[6], &peds[7], &peds[8], &peds[9], &peds[10], &peds[11], &peds[12], &peds[13], &peds[14], &peds[15]);
         for(int j = 0; j < NUM_CHANNELS; j++) {
-            all_peds[1*(NUM_SAMPLES*NUM_CHANNELS) + i*NUM_CHANNELS + j] = peds[j];
+            all_peds[1 * NUM_SAMPLES + i][j] = peds[j];
         }
     }
     fclose(fp);
     return 0;
 }
 
-int initialize_inputs(struct SW_Data_Packet * data_packet, uint16_t * all_peds) {
+int initialize_inputs(struct SW_Data_Packet * data_packet, vec_uint16_16 * all_peds) {
     int data_packet_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/EventStream.dat", 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
@@ -194,15 +194,17 @@ int produce_output(const char ** bounds, int32_t *integrals, struct SW_Data_Pack
 // ------------------------------------------------------------------------------------
 int main()
 {
+        printf("Beginning of main\n");
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
-    uint16_t input_all_peds[NUM_ALPHAS*2*NUM_SAMPLES*NUM_CHANNELS];
+    vec_uint16_16 input_all_peds[NUM_ALPHAS*2*NUM_SAMPLES];
     int16_t bounds[2*NUM_INTEGRALS];
     int32_t output_integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
     Centroid centroid;
 
-    // Initialize the data used in the test
+    // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-        unsigned ped_offset = alpha * 2 * NUM_SAMPLES * NUM_CHANNELS;
+        printf("Initializing inputs for alpha %u\n", alpha);
+        unsigned ped_offset = alpha * 2 * NUM_SAMPLES;
         initialize_inputs(input_data_packet + alpha,
                          input_all_peds + ped_offset);
     }
@@ -220,7 +222,7 @@ int main()
     int32_t zero_thresholds[NUM_INTEGRALS] = {-1000, -1000, -1000, 5};
 
     preprocess( input_data_packet,
-                (uint16_t *) input_all_peds,
+                (vec_uint16_16 *) input_all_peds,
                 bounds,
                 (int32_t *) zero_thresholds,
                 (int32_t *) output_integrals,
