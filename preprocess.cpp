@@ -10,23 +10,27 @@
 #include "preprocess.h"
 
 int16_t ped_sub_results[NUM_ALPHAS][NUM_SAMPLES][NUM_CHANNELS]; // Really 13 bits
-int32_t integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
+int32_t integrals[NUM_ALPHAS][NUM_INTEGRALS][NUM_CHANNELS];
 Centroid local_centroid;
 
 
 void ped_subtract(const SW_Data_Packet * pkt, const uint16_t *peds, const uint8_t a) {
+    const uint8_t starting_sample_number = pkt->starting_sample_number;
+    const uint8_t bank = pkt->bank;
+
     ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
         ped_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
             #pragma HLS PIPELINE II=1
+            #pragma HLS UNROLL factor=16
             // calculate base address for integral
-            const uint16_t idx = (pkt->starting_sample_number + s) % NUM_SAMPLES;
-            const uint16_t ped_idx = pkt->bank*NUM_SAMPLES*NUM_CHANNELS + idx*NUM_CHANNELS + c;
+            const uint16_t idx = (starting_sample_number + s) % NUM_SAMPLES;
+            const uint16_t ped_idx = bank*NUM_SAMPLES*NUM_CHANNELS + idx*NUM_CHANNELS + c;
             ped_sub_results[a][s][c] = pkt->samples[s][c] - peds[ped_idx];
         }
     }
 }
 
-void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, int32_t *integrals, const uint8_t a) {
+void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, const uint8_t a) {
 
     //Assume fine_time > starting_sample_number, so base_addr is positive
     int16_t base_addr = pkt->fine_time - pkt->starting_sample_number;
@@ -41,7 +45,7 @@ void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, int32_t *integ
                 if((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) {
                     // printf("sample %d, base_addr %d, offset %d inside bounds [%d,%d] for integral %d\n", s, base_addr, x,
                     // bounds[2*i], bounds[2*i+1], i);
-                    integrals[i*NUM_CHANNELS+c] += ped_sub_results[a][s][c];
+                    integrals[a][i][c] += ped_sub_results[a][s][c];
                 }
             }
         }
@@ -97,24 +101,27 @@ int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_nu
     return 0;
 }
 
-void zero_suppress(int32_t * integrals, const int32_t * thresholds) {
+void zero_suppress(const int32_t * thresholds, const uint8_t a) {
     zero_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+        #pragma HLS PIPELINE II=1
+        #pragma HLS UNROLL factor=4
         zero_channels: for(uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-            if(integrals[i*NUM_CHANNELS+c] < thresholds[i]) {
-                integrals[i*NUM_CHANNELS+c] = 0;
-            }
+            #pragma HLS PIPELINE II=1
+            #pragma HLS UNROLL factor=16
+            int32_t integral = integrals[a][i][c];
+            const int32_t threshold = thresholds[i];
+            integral = (integral < threshold) ? 0 : integral;
+            integrals[a][i][c] = integral;
         }
     }
 }
 
-int16_t island_detection(int32_t * integrals, const uint8_t integral_num) {
+int16_t island_detection(const uint8_t integral_num) {
     bool in_island = 0;
     int16_t num_islands = 0;
     island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
         island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-            const uint16_t idx = a * NUM_INTEGRALS * NUM_CHANNELS + 
-                           integral_num * NUM_CHANNELS + c;
-            int32_t integral_val = integrals[idx];
+            int32_t integral_val = integrals[a][integral_num][c];
             if(integral_val && !in_island) {
                 in_island = true;
                 ++num_islands;
@@ -130,16 +137,15 @@ int16_t island_detection(int32_t * integrals, const uint8_t integral_num) {
 
 }
 
-int16_t centroiding(Centroid * centroid, int32_t *integrals, const uint8_t integral_num) {
-    int16_t count = island_detection(integrals, integral_num);
+int16_t centroiding(Centroid * centroid, const uint8_t integral_num) {
+    int16_t count = island_detection(integral_num);
     if (count > 0) {        
         centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
             centroiding_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
                 const uint16_t pos = a * NUM_CHANNELS + c;
-                const uint16_t idx = a * NUM_INTEGRALS * NUM_CHANNELS + 
-                            integral_num * NUM_CHANNELS + c;
-                centroid->position += pos * integrals[idx];
-                centroid->signal += integrals[idx];
+                const int32_t integral = integrals[a][integral_num][c];
+                centroid->position += pos * integral;
+                centroid->signal += integral;
             }
         }
 
@@ -173,16 +179,13 @@ extern "C" {
 #pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm6
 
         loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-            const uint16_t ped_offset = alpha * 2 * NUM_SAMPLES * NUM_CHANNELS;
-            const uint16_t integral_offset = alpha * NUM_INTEGRALS * NUM_CHANNELS;
 
-            ped_subtract(&input_data_packet[alpha],
-                         input_all_peds + ped_offset,
+            ped_subtract(input_data_packet + alpha,
+                         input_all_peds + alpha * 2 * NUM_SAMPLES * NUM_CHANNELS,
                          alpha);
 
-            integrate(&input_data_packet[alpha],
+            integrate(input_data_packet + alpha,
                       bounds,
-                      integrals + integral_offset,
                       alpha);
         
             // int8_t base_addr = input_data_packet->fine_time - input_data_packet->starting_sample_number;
@@ -191,11 +194,11 @@ extern "C" {
             // integrate_bad(&base_addr, bounds[4], bounds[5], 2, output_integrals);
             // integrate_bad(&base_addr, bounds[6], bounds[7], 3, output_integrals);
             
-            zero_suppress(integrals + integral_offset, zero_thresholds);
+            zero_suppress(zero_thresholds, alpha);
 
         }
 
-        centroiding(&local_centroid, integrals, 3);
+        centroiding(&local_centroid, 3);
 
         write_outputs(centroid, output_integrals);
 
