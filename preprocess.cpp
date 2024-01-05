@@ -13,9 +13,9 @@ int16_t ped_sub_results[NUM_ALPHAS][NUM_SAMPLES][NUM_CHANNELS]; // Really 13 bit
 
 int ped_subtract(SW_Data_Packet * pkt, uint16_t *peds, uint8_t a) {
     // calculate base address for integral
-    for (unsigned s = 0; s < NUM_SAMPLES; ++s) {
+    ped_samples: for (unsigned s = 0; s < NUM_SAMPLES; ++s) {
         unsigned idx = (pkt->starting_sample_number + s) % NUM_SAMPLES;
-        for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
+        ped_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
             unsigned ped_idx = pkt->bank*NUM_SAMPLES*NUM_CHANNELS + idx*NUM_CHANNELS + c;
             ped_sub_results[a][s][c] = pkt->samples[s][c] - peds[ped_idx];
         }
@@ -29,10 +29,10 @@ int integrate(SW_Data_Packet * pkt, int *bounds, int32_t *integrals, uint8_t a) 
     int base_addr = pkt->fine_time - pkt->starting_sample_number;
     if(base_addr < 0) base_addr += NUM_SAMPLES;
 
-    for (int s = 0; s < NUM_SAMPLES; ++s) {
+    int_samples: for (int s = 0; s < NUM_SAMPLES; ++s) {
         int x = s - base_addr;
-        for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
-            for (unsigned i = 0; i < NUM_INTEGRALS; ++i) {
+        int:channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
+            int_integrals: for (unsigned i = 0; i < NUM_INTEGRALS; ++i) {
                 int start = bounds[2*i];
                 int end = bounds[2*i+1];
                 if((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) {
@@ -97,8 +97,8 @@ int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_nu
 }
 
 int zero_suppress(int32_t * integrals, int32_t * thresholds) {
-    for(unsigned i = 0; i < NUM_INTEGRALS; ++i) {
-        for(unsigned c = 0; c < NUM_CHANNELS; ++c) {
+    zero_integrals: for(unsigned i = 0; i < NUM_INTEGRALS; ++i) {
+        zero_channels: for(unsigned c = 0; c < NUM_CHANNELS; ++c) {
             if(integrals[i*NUM_CHANNELS+c] < thresholds[i]) {
                 integrals[i*NUM_CHANNELS+c] = 0;
             }
@@ -110,8 +110,8 @@ int zero_suppress(int32_t * integrals, int32_t * thresholds) {
 int island_detection(int32_t * integrals, const uint8_t integral_num) {
     bool in_island = 0;
     int num_islands = 0;
-    for (unsigned a = 0; a < NUM_ALPHAS; ++a) {
-        for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
+    island_alphas: for (unsigned a = 0; a < NUM_ALPHAS; ++a) {
+        island_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
             unsigned idx = a * NUM_INTEGRALS * NUM_CHANNELS + 
                            integral_num * NUM_CHANNELS + c;
             if(integrals[idx] && !in_island) {
@@ -132,8 +132,8 @@ int island_detection(int32_t * integrals, const uint8_t integral_num) {
 int centroiding(Centroid * centroid, int32_t *integrals, const uint8_t integral_num) {
     int count = island_detection(integrals, integral_num);
     if (count > 0) {        
-        for (unsigned a = 0; a < NUM_ALPHAS; ++a) {
-            for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
+        centroiding_alphas: for (unsigned a = 0; a < NUM_ALPHAS; ++a) {
+            centroiding_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
                 unsigned pos = a * NUM_CHANNELS + c;
                 unsigned idx = a * NUM_INTEGRALS * NUM_CHANNELS + 
                             integral_num * NUM_CHANNELS + c;
@@ -166,7 +166,7 @@ extern "C" {
 #pragma HLS INTERFACE m_axi depth=320 port=output_integrals bundle=aximm5
 #pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm6
 
-        for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+        loop_alphas: for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
             unsigned ped_offset = alpha * 2 * NUM_SAMPLES * NUM_CHANNELS;
             unsigned integral_offset = alpha * NUM_INTEGRALS * NUM_CHANNELS;
 
