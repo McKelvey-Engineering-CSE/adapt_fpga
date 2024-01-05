@@ -1,22 +1,22 @@
 #ifndef PREPROCESS_H
 #define PREPROCESS_H
 
-extern "C" {
-    void preprocess(
-	        const struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
-	        const uint16_t *input_all_peds, // Read-Only Pedestals
-            const int16_t * bounds, // Read-Only Integral Bounds
-            const int32_t *zero_thresholds, // Read-Only Thresholds for zero-suppression
-	        int32_t *output_integrals,       // Output Result (Integrals)
-            struct Centroid *centroid // Output Centroid
-	);
-}
-
 #define NUM_CHANNELS 16
 #define NUM_SAMPLES 256 // N
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
 #define NUM_INTEGRALS 4
 #define NUM_ALPHAS 5
+
+extern "C" {
+    void preprocess(
+	        const struct SW_Data_Packet input_data_packet[NUM_ALPHAS], // Read-Only Data Packet Struct
+	        const uint16_t *input_all_peds, // Read-Only Pedestals
+            const int16_t bounds[2*NUM_INTEGRALS], // Read-Only Integral Bounds
+            const int32_t *zero_thresholds, // Read-Only Thresholds for zero-suppression
+	        int32_t *output_integrals,       // Output Result (Integrals)
+            struct Centroid *centroid // Output Centroid
+	);
+}
 
 /*
  Mimics incoming data packet in C types.

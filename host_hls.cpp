@@ -219,9 +219,10 @@ int main()
 
     int32_t zero_thresholds[NUM_INTEGRALS] = {-1000, -1000, -1000, 5};
 
-    preprocess( (SW_Data_Packet *) input_data_packet,
+    preprocess( input_data_packet,
                 (uint16_t *) input_all_peds,
-                (int16_t *) bounds, (int32_t *) zero_thresholds,
+                bounds,
+                (int32_t *) zero_thresholds,
                 (int32_t *) output_integrals,
                 (struct Centroid *) &centroid
                 );

@@ -15,13 +15,13 @@ Centroid local_centroid;
 
 
 void ped_subtract(const SW_Data_Packet * pkt, const uint16_t *peds, const uint8_t a) {
+
     const uint8_t starting_sample_number = pkt->starting_sample_number;
     const uint8_t bank = pkt->bank;
 
     ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
         ped_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
             #pragma HLS PIPELINE II=1
-            #pragma HLS UNROLL factor=16
             // calculate base address for integral
             const uint16_t idx = (starting_sample_number + s) % NUM_SAMPLES;
             const uint16_t ped_idx = bank*NUM_SAMPLES*NUM_CHANNELS + idx*NUM_CHANNELS + c;
@@ -36,18 +36,21 @@ void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, const uint8_t 
     int16_t base_addr = pkt->fine_time - pkt->starting_sample_number;
     if(base_addr < 0) base_addr += NUM_SAMPLES;
 
-    int_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
-        int_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-            int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+    int_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+        // #pragma HLS PIPELINE II=1
+        int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+            const int16_t start = bounds[2*i];
+            const int16_t end = bounds[2*i+1];
+            int32_t current_integral = 0;
+            int_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
+                #pragma HLS UNROLL factor=256
                 const int16_t x = s - base_addr;
-                const int16_t start = bounds[2*i];
-                const int16_t end = bounds[2*i+1];
-                if((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) {
-                    // printf("sample %d, base_addr %d, offset %d inside bounds [%d,%d] for integral %d\n", s, base_addr, x,
-                    // bounds[2*i], bounds[2*i+1], i);
-                    integrals[a][i][c] += ped_sub_results[a][s][c];
-                }
+                current_integral =
+                    ((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) ?
+                    current_integral + ped_sub_results[a][s][c] :
+                    current_integral;
             }
+            integrals[a][i][c] = current_integral;
         }
     }
 }
@@ -162,17 +165,19 @@ void write_outputs(Centroid * centroid, int32_t * output_integrals) {
 
 extern "C" {
     void preprocess(
-	        const struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
+	        const struct SW_Data_Packet input_data_packet[NUM_ALPHAS], // Read-Only Data Packet Struct
 	        const uint16_t *input_all_peds, // Read-Only Pedestals
-            const int16_t * bounds, // Read-Only Integral Bounds
+            const int16_t bounds[2*NUM_INTEGRALS], // Read-Only Integral Bounds
             const int32_t *zero_thresholds, // Read-Only Thresholds for zero-suppression
 	        int32_t *output_integrals,       // Output Result (Integrals)
             struct Centroid *centroid // Output Centroid
 	        )
     {
-#pragma HLS INTERFACE m_axi depth=5 port=input_data_packet bundle=aximm1
+#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet bundle=aximm1
+#pragma HLS array_partition variable=input_data_packet type=block factor=5
 #pragma HLS INTERFACE mode=bram depth=40960 port=input_all_peds
-#pragma HLS INTERFACE mode=bram depth=8 port=bounds
+#pragma HLS INTERFACE mode=bram depth=1 port=bounds
+#pragma HLS array_partition variable=bounds type=block factor=4
 #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
 #pragma HLS INTERFACE m_axi depth=320 port=output_integrals bundle=aximm5
 #pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm6
