@@ -31,7 +31,7 @@ int integrate(SW_Data_Packet * pkt, int *bounds, int32_t *integrals, uint8_t a) 
 
     int_samples: for (int s = 0; s < NUM_SAMPLES; ++s) {
         int x = s - base_addr;
-        int:channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
+        int_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
             int_integrals: for (unsigned i = 0; i < NUM_INTEGRALS; ++i) {
                 int start = bounds[2*i];
                 int end = bounds[2*i+1];
