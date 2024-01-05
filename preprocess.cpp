@@ -42,8 +42,8 @@ void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, const uint8_t 
     base_addr = (base_addr < 0) ? base_addr + NUM_SAMPLES : base_addr;
 
     int_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-        #pragma HLS PIPELINE II=1
         int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+            #pragma HLS PIPELINE II=1
             const int16_t start = bounds[2*i];
             const int16_t end = bounds[2*i+1];
             int32_t current_integral = 0;
