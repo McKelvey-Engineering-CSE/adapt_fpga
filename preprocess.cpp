@@ -156,9 +156,9 @@ extern "C" {
 	        )
     {
 #pragma HLS INTERFACE m_axi depth=5 port=input_data_packet bundle=aximm1
-#pragma HLS INTERFACE m_axi depth=40960 port=input_all_peds bundle=aximm2
-#pragma HLS INTERFACE m_axi depth=8 port=bounds bundle=aximm3
-#pragma HLS INTERFACE m_axi depth=4 port=zero_thresholds bundle=aximm4
+#pragma HLS INTERFACE mode=bram depth=40960 port=input_all_peds
+#pragma HLS INTERFACE mode=bram depth=8 port=bounds
+#pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
 #pragma HLS INTERFACE m_axi depth=320 port=output_integrals bundle=aximm5
 #pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm6
 
