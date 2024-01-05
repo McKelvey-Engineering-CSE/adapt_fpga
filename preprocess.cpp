@@ -120,7 +120,11 @@ int16_t island_detection(const uint8_t integral_num) {
     bool in_island = 0;
     int16_t num_islands = 0;
     island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+        #pragma HLS PIPELINE II=1
+        #pragma HLS UNROLL factor=5
         island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+            #pragma HLS PIPELINE II=1
+            #pragma HLS UNROLL factor=16
             int32_t integral_val = integrals[a][integral_num][c];
             if(integral_val && !in_island) {
                 in_island = true;
