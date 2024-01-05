@@ -196,7 +196,7 @@ int main()
 {
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
     uint16_t input_all_peds[NUM_ALPHAS*2*NUM_SAMPLES*NUM_CHANNELS];
-    int bounds[2*NUM_INTEGRALS];
+    int16_t bounds[2*NUM_INTEGRALS];
     int32_t output_integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
     Centroid centroid;
 
@@ -221,7 +221,7 @@ int main()
 
     preprocess( (SW_Data_Packet *) input_data_packet,
                 (uint16_t *) input_all_peds,
-                (int *) bounds, (int32_t *) zero_thresholds,
+                (int16_t *) bounds, (int32_t *) zero_thresholds,
                 (int32_t *) output_integrals,
                 (struct Centroid *) &centroid
                 );
