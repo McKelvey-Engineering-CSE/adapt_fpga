@@ -143,20 +143,22 @@ int16_t island_detection(const uint8_t integral_num) {
 
 int16_t centroiding(Centroid * centroid, const uint8_t integral_num) {
     int16_t count = island_detection(integral_num);
-    if (count > 0) {        
-        centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-            centroiding_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
-                const uint16_t pos = a * NUM_CHANNELS + c;
-                const int32_t integral = integrals[a][integral_num][c];
-                centroid->position += pos * integral;
-                centroid->signal += integral;
-            }
+    uint16_t position = 0;
+    uint16_t signal = 0;  
+    centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+        #pragma HLS PIPELINE II=1
+        #pragma HLS UNROLL factor=5
+        centroiding_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
+            #pragma HLS PIPELINE II=1
+            #pragma HLS UNROLL factor=16
+            const uint16_t pos = a * NUM_CHANNELS + c;
+            const int32_t integral = integrals[a][integral_num][c];
+            position += pos * integral;
+            signal += integral;
         }
-
-        // printf("Centroid signal %u, mult-accum %u, ", centroid->signal, centroid->position);
-        centroid->position /= centroid->signal;
-        // printf("position %u\n", centroid->position);
     }
+    centroid->position = (count > 0) ? position / signal : 0;
+    centroid->signal = (count > 0) ? signal : 0;
     return count;
 }
 
