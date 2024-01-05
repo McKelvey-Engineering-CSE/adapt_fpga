@@ -114,11 +114,12 @@ int16_t island_detection(int32_t * integrals, const uint8_t integral_num) {
         island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
             const uint16_t idx = a * NUM_INTEGRALS * NUM_CHANNELS + 
                            integral_num * NUM_CHANNELS + c;
-            if(integrals[idx] && !in_island) {
+            int32_t integral_val = integrals[idx];
+            if(integral_val && !in_island) {
                 in_island = true;
                 ++num_islands;
             }
-            else if (!integrals[idx] && in_island) {
+            else if (!integral_val && in_island) {
                 in_island = false;
             }
         }
