@@ -11,7 +11,7 @@
 int16_t ped_sub_results[NUM_ALPHAS][NUM_SAMPLES][NUM_CHANNELS]; // Really 13 bits
 
 
-int ped_subtract(const SW_Data_Packet * pkt, const uint16_t *peds, const uint8_t a) {
+void ped_subtract(const SW_Data_Packet * pkt, const uint16_t *peds, const uint8_t a) {
     ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
         // calculate base address for integral
         const uint16_t idx = (pkt->starting_sample_number + s) % NUM_SAMPLES;
@@ -20,10 +20,9 @@ int ped_subtract(const SW_Data_Packet * pkt, const uint16_t *peds, const uint8_t
             ped_sub_results[a][s][c] = pkt->samples[s][c] - peds[ped_idx];
         }
     }
-    return 0;
 }
 
-int integrate(const SW_Data_Packet * pkt, const int16_t *bounds, int32_t *integrals, const uint8_t a) {
+void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, int32_t *integrals, const uint8_t a) {
 
     //Assume fine_time > starting_sample_number, so base_addr is positive
     int16_t base_addr = pkt->fine_time - pkt->starting_sample_number;
@@ -43,7 +42,6 @@ int integrate(const SW_Data_Packet * pkt, const int16_t *bounds, int32_t *integr
             }
         }
     }
-    return 0;
 }
 
 
@@ -95,7 +93,7 @@ int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_nu
     return 0;
 }
 
-int zero_suppress(int32_t * integrals, const int32_t * thresholds) {
+void zero_suppress(int32_t * integrals, const int32_t * thresholds) {
     zero_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
         zero_channels: for(uint8_t c = 0; c < NUM_CHANNELS; ++c) {
             if(integrals[i*NUM_CHANNELS+c] < thresholds[i]) {
@@ -103,12 +101,11 @@ int zero_suppress(int32_t * integrals, const int32_t * thresholds) {
             }
         }
     }
-    return 0;
 }
 
-int island_detection(int32_t * integrals, const uint8_t integral_num) {
+int16_t island_detection(int32_t * integrals, const uint8_t integral_num) {
     bool in_island = 0;
-    int num_islands = 0;
+    int16_t num_islands = 0;
     island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
         island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
             const uint16_t idx = a * NUM_INTEGRALS * NUM_CHANNELS + 
@@ -128,8 +125,8 @@ int island_detection(int32_t * integrals, const uint8_t integral_num) {
 
 }
 
-int centroiding(Centroid * centroid, int32_t *integrals, const uint8_t integral_num) {
-    int count = island_detection(integrals, integral_num);
+int16_t centroiding(Centroid * centroid, int32_t *integrals, const uint8_t integral_num) {
+    int16_t count = island_detection(integrals, integral_num);
     if (count > 0) {        
         centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
             centroiding_channels: for (unsigned c = 0; c < NUM_CHANNELS; ++c) {
