@@ -4,18 +4,22 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <cstring> //For memcpy
 
 // char: 8 bit, short: 16 bit, long: 32 bit
 #include "preprocess.h"
 
 int16_t ped_sub_results[NUM_ALPHAS][NUM_SAMPLES][NUM_CHANNELS]; // Really 13 bits
+int32_t integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
+Centroid local_centroid;
 
 
 void ped_subtract(const SW_Data_Packet * pkt, const uint16_t *peds, const uint8_t a) {
     ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
-        // calculate base address for integral
-        const uint16_t idx = (pkt->starting_sample_number + s) % NUM_SAMPLES;
         ped_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+            #pragma HLS PIPELINE II=1
+            // calculate base address for integral
+            const uint16_t idx = (pkt->starting_sample_number + s) % NUM_SAMPLES;
             const uint16_t ped_idx = pkt->bank*NUM_SAMPLES*NUM_CHANNELS + idx*NUM_CHANNELS + c;
             ped_sub_results[a][s][c] = pkt->samples[s][c] - peds[ped_idx];
         }
@@ -29,9 +33,9 @@ void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, int32_t *integ
     if(base_addr < 0) base_addr += NUM_SAMPLES;
 
     int_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
-        const int16_t x = s - base_addr;
         int_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
             int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+                const int16_t x = s - base_addr;
                 const int16_t start = bounds[2*i];
                 const int16_t end = bounds[2*i+1];
                 if((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) {
@@ -145,6 +149,11 @@ int16_t centroiding(Centroid * centroid, int32_t *integrals, const uint8_t integ
     return count;
 }
 
+void write_outputs(Centroid * centroid, int32_t * output_integrals) {
+    *centroid = local_centroid;
+    memcpy(output_integrals, integrals, NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS*sizeof(int32_t));
+}
+
 extern "C" {
     void preprocess(
 	        const struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
@@ -172,7 +181,7 @@ extern "C" {
 
             integrate(&input_data_packet[alpha],
                       bounds,
-                      output_integrals + integral_offset,
+                      integrals + integral_offset,
                       alpha);
         
             // int8_t base_addr = input_data_packet->fine_time - input_data_packet->starting_sample_number;
@@ -181,11 +190,13 @@ extern "C" {
             // integrate_bad(&base_addr, bounds[4], bounds[5], 2, output_integrals);
             // integrate_bad(&base_addr, bounds[6], bounds[7], 3, output_integrals);
             
-            zero_suppress(output_integrals + integral_offset, zero_thresholds);
+            zero_suppress(integrals + integral_offset, zero_thresholds);
 
         }
 
-        centroiding(centroid, output_integrals, 3);
+        centroiding(&local_centroid, integrals, 3);
+
+        write_outputs(centroid, output_integrals);
 
     }
 }
