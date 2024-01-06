@@ -73,7 +73,7 @@ void integrate(const int16_t base_addr,
         samples = ped_sub_results.read();
 
         int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-            // #pragma HLS UNROLL factor=4
+            #pragma HLS UNROLL factor=4
             const int16_t start = bounds[2*i];
             const int16_t end = bounds[2*i+1];
             vec_int32_16 current_integral = (s == 0) ? 0 : tmp_integrals[i];
