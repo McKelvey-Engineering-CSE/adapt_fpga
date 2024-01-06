@@ -100,7 +100,7 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
     vec_int32_16 integral;
 
     zero_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-
+        #pragma HLS UNROLL factor=4
         integral = integrals.read();
         const int32_t threshold = zero_thesholds[i];
         vec_int32_16 zeroed_integral;
