@@ -1,0 +1,141 @@
+
+
+================================================================
+== Synthesis Summary Report of 'preprocess'
+================================================================
++ General Information: 
+    * Date:           Sat Jan  6 12:05:04 2024
+    * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
+    * Project:        sw_emu_project
+    * Solution:       solution1 (Vivado IP Flow Target)
+    * Product family: kintex7
+    * Target device:  xc7k325t-ffg900-2
+    
+
++ Performance & Resource Estimates: 
+    
+    PS: '+' for module; 'o' for loop; '*' for dataflow
+    +--------------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+-------+----------+---------+---------+------------+------------+-----+
+    |                                  Modules                                 |  Issue |       | Latency |  Latency  | Iteration|         |  Trip |          |         |         |            |            |     |
+    |                                  & Loops                                 |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count | Pipelined|  BRAM   |   DSP   |     FF     |     LUT    | URAM|
+    +--------------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+-------+----------+---------+---------+------------+------------+-----+
+    |+ preprocess                                                              |  Timing|  -0.00|  1254833|  1.255e+07|         -|  1254834|      -|        no|  44 (4%)|  15 (1%)|   6336 (1%)|  11077 (5%)|    -|
+    | + grp_preprocess_Pipeline_island_alphas_fu_260                           |  Timing|  -0.00|      102|  1.020e+03|         -|      102|      -|        no|        -|        -|   217 (~0%)|   994 (~0%)|    -|
+    |  o island_alphas                                                         |      II|   7.30|      100|  1.000e+03|        25|       16|      5|       yes|        -|        -|           -|           -|    -|
+    | + grp_preprocess_Pipeline_ped_samples_ped_channels_fu_268                |  Timing|  -0.00|     4106|  4.106e+04|         -|     4106|      -|        no|        -|        -|   489 (~0%)|   676 (~0%)|    -|
+    |  o ped_samples_ped_channels                                              |       -|   7.30|     4104|  4.104e+04|        10|        1|   4096|       yes|        -|        -|           -|           -|    -|
+    | + grp_preprocess_Pipeline_int_samples_int_channels_int_integrals_fu_284  |  Timing|  -0.00|   245763|  2.458e+06|         -|   245763|      -|        no|        -|        -|   229 (~0%)|   694 (~0%)|    -|
+    |  o int_samples_int_channels_int_integrals                                |      II|   7.30|   245761|  2.458e+06|        17|       15|  16384|       yes|        -|        -|           -|           -|    -|
+    | + grp_preprocess_Pipeline_zero_integrals_fu_298                          |  Timing|  -0.00|     1026|  1.026e+04|         -|     1026|      -|        no|        -|        -|  1854 (~0%)|   3503 (1%)|    -|
+    |  o zero_integrals                                                        |      II|   7.30|     1024|  1.024e+04|       257|      256|      4|       yes|        -|        -|           -|           -|    -|
+    | + grp_preprocess_Pipeline_centroiding_alphas_fu_308                      |  Timing|  -0.00|       95|    950.000|         -|       95|      -|        no|        -|  15 (1%)|   629 (~0%)|   826 (~0%)|    -|
+    |  o centroiding_alphas                                                    |      II|   7.30|       93|    930.000|        30|       16|      5|       yes|        -|        -|           -|           -|    -|
+    | o loop_alphas                                                            |       -|   7.30|  1254595|  1.255e+07|    250919|        -|      5|        no|        -|        -|           -|           -|    -|
+    +--------------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+-------+----------+---------+---------+------------+------------+-----+
+
+
+================================================================
+== HW Interfaces
+================================================================
+* M_AXI
++--------------+-------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
+| Interface    | Data Width  | Address Width | Latency | Offset | Register | Max Widen | Max Read     | Max Write    | Num Read    | Num Write   |
+|              | (SW->HW)    |               |         |        |          | Bitwidth  | Burst Length | Burst Length | Outstanding | Outstanding |
++--------------+-------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
+| m_axi_aximm1 | 65728 -> 32 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm5 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm6 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
++--------------+-------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
+
+* S_AXILITE
++---------------+------------+---------------+--------+----------+
+| Interface     | Data Width | Address Width | Offset | Register |
++---------------+------------+---------------+--------+----------+
+| s_axi_control | 32         | 6             | 16     | 0        |
++---------------+------------+---------------+--------+----------+
+
+* BRAM
++-----------------------+------------+---------------+
+| Interface             | Data Width | Address Width |
++-----------------------+------------+---------------+
+| bounds_PORTA          | 16         | 32            |
+| bounds_PORTB          | 16         | 32            |
+| input_all_peds_PORTA  | 16         | 32            |
+| zero_thresholds_PORTA | 32         | 32            |
++-----------------------+------------+---------------+
+
+* TOP LEVEL CONTROL
++-----------+------------+-----------------------------------+
+| Interface | Type       | Ports                             |
++-----------+------------+-----------------------------------+
+| ap_clk    | clock      | ap_clk                            |
+| ap_rst_n  | reset      | ap_rst_n                          |
+| ap_ctrl   | ap_ctrl_hs | ap_done ap_idle ap_ready ap_start |
++-----------+------------+-----------------------------------+
+
+
+================================================================
+== SW I/O Information
+================================================================
+* Top Function Arguments
++-------------------+-----------+------------------------+
+| Argument          | Direction | Datatype               |
++-------------------+-----------+------------------------+
+| input_data_packet | in        | SW_Data_Packet const * |
+| input_all_peds    | in        | unsigned short const * |
+| bounds            | in        | short const *          |
+| zero_thresholds   | in        | int const *            |
+| output_integrals  | inout     | int*                   |
+| centroid          | inout     | Centroid*              |
++-------------------+-----------+------------------------+
+
+* SW-to-HW Mapping
++-------------------+-----------------------------------+-----------+----------+-----------------------+
+| Argument          | HW Name                           | HW Type   | HW Usage | HW Info               |
++-------------------+-----------------------------------+-----------+----------+-----------------------+
+| input_data_packet | m_axi_aximm1                      | interface |          |                       |
+| input_data_packet | s_axi_control input_data_packet_1 | register  | offset   | offset=0x10, range=32 |
+| input_data_packet | s_axi_control input_data_packet_2 | register  | offset   | offset=0x14, range=32 |
+| input_all_peds    | input_all_peds_PORTA              | interface |          |                       |
+| bounds            | bounds_PORTA                      | interface |          |                       |
+| bounds            | bounds_PORTB                      | interface |          |                       |
+| zero_thresholds   | zero_thresholds_PORTA             | interface |          |                       |
+| output_integrals  | m_axi_aximm5                      | interface |          |                       |
+| output_integrals  | s_axi_control output_integrals_1  | register  | offset   | offset=0x1c, range=32 |
+| output_integrals  | s_axi_control output_integrals_2  | register  | offset   | offset=0x20, range=32 |
+| centroid          | m_axi_aximm6                      | interface |          |                       |
+| centroid          | s_axi_control centroid_1          | register  | offset   | offset=0x28, range=32 |
+| centroid          | s_axi_control centroid_2          | register  | offset   | offset=0x2c, range=32 |
++-------------------+-----------------------------------+-----------+----------+-----------------------+
+
+
+================================================================
+== M_AXI Burst Information
+================================================================
+* Burst Summary
++--------------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------+
+| HW Interface | Loop                 | Message                                                                                                                                                                                                                 | Location                 |
++--------------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------+
+| m_axi_aximm5 | island_channels      | Multiple burst reads of length 16 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:61:26 |
+| m_axi_aximm5 | centroiding_channels | Multiple burst reads of length 16 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:83:35 |
++--------------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------+
+
+* Bursts and Widening Missed
++--------------+-------------------+--------------------+-------------------------------------------------------------------------------------------------------------------+------------+--------------------------+
+| HW Interface | Variable          | Loop               | Problem                                                                                                           | Resolution | Location                 |
++--------------+-------------------+--------------------+-------------------------------------------------------------------------------------------------------------------+------------+--------------------------+
+| m_axi_aximm5 | output_integrals  | centroiding_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:82:29 |
+| m_axi_aximm5 | output_integrals  | island_alphas      | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:60:20 |
+| m_axi_aximm5 | output_integrals  | int_integrals      | Access load is in the conditional branch                                                                          | 214-232    | src/preprocess.cpp:34:28 |
+| m_axi_aximm5 | output_integrals  | int_integrals      | Access store is in the conditional branch                                                                         | 214-232    | src/preprocess.cpp:34:28 |
+| m_axi_aximm5 | output_integrals  | zero_channels      | Access store is in the conditional branch                                                                         | 214-232    | src/preprocess.cpp:49:24 |
+| m_axi_aximm5 | output_integrals  |                    | Access is clobbered by store                                                                                      | 214-231    | src/preprocess.cpp:50:16 |
+| m_axi_aximm6 | centroid          |                    | Could not widen since the size of type 'i16' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:95:5  |
+| m_axi_aximm5 | output_integrals  |                    | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:83:35 |
+| m_axi_aximm6 | centroid          |                    | Could not widen since the size of type 'i16' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:87:36 |
+| m_axi_aximm5 | output_integrals  |                    | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:61:26 |
+| m_axi_aximm1 | input_data_packet |                    | Could not widen since the size of type 'i16' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:15:18 |
++--------------+-------------------+--------------------+-------------------------------------------------------------------------------------------------------------------+------------+--------------------------+
+
+    * Resolution URL: www.xilinx.com/cgi-bin/docs/rdoc?v=2021.1;t=hls+guidance;d=XXX-YYY.html (replace XXX-YYY with column value)
+
