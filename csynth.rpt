@@ -4,7 +4,7 @@
 == Synthesis Summary Report of 'preprocess'
 ================================================================
 + General Information: 
-    * Date:           Fri Jan  5 22:13:47 2024
+    * Date:           Sat Jan  6 02:51:44 2024
     * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
     * Project:        sw_emu_project
     * Solution:       solution1 (Vivado IP Flow Target)
@@ -19,16 +19,16 @@
     |                              Modules                              |  Issue |       | Latency |  Latency  | Iteration|         | Trip |          |         |         |            |            |     |
     |                              & Loops                              |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count| Pipelined|  BRAM   |   DSP   |     FF     |     LUT    | URAM|
     +-------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+---------+---------+------------+------------+-----+
-    |+ preprocess                                                       |  Timing|  -0.00|  1254917|  1.255e+07|         -|  1254918|     -|        no|  54 (6%)|  15 (1%)|   9177 (2%)|  14815 (7%)|    -|
-    | + grp_preprocess_Pipeline_VITIS_LOOP_113_1_fu_336                 |  Timing|  -0.00|      101|  1.010e+03|         -|      101|     -|        no|        -|        -|   329 (~0%)|  1506 (~0%)|    -|
+    |+ preprocess                                                       |  Timing|  -0.00|  1254917|  1.255e+07|         -|  1254918|     -|        no|  88 (9%)|  15 (1%)|   9231 (2%)|  14734 (7%)|    -|
+    | + grp_preprocess_Pipeline_VITIS_LOOP_113_1_fu_332                 |  Timing|  -0.00|      101|  1.010e+03|         -|      101|     -|        no|        -|        -|   329 (~0%)|  1506 (~0%)|    -|
     |  o VITIS_LOOP_113_1                                               |      II|   7.30|       99|    990.000|        25|       16|     5|       yes|        -|        -|           -|           -|    -|
-    | + grp_preprocess_Pipeline_VITIS_LOOP_16_1_VITIS_LOOP_18_2_fu_344  |  Timing|  -0.00|     4106|  4.106e+04|         -|     4106|     -|        no|        -|        -|   430 (~0%)|   569 (~0%)|    -|
+    | + grp_preprocess_Pipeline_VITIS_LOOP_16_1_VITIS_LOOP_18_2_fu_340  |  Timing|  -0.00|     4106|  4.106e+04|         -|     4106|     -|        no|        -|        -|   446 (~0%)|   585 (~0%)|    -|
     |  o VITIS_LOOP_16_1_VITIS_LOOP_18_2                                |       -|   7.30|     4104|  4.104e+04|        10|        1|  4096|       yes|        -|        -|           -|           -|    -|
-    | + grp_preprocess_Pipeline_VITIS_LOOP_32_1_VITIS_LOOP_34_2_fu_358  |  Timing|  -0.00|   245772|  2.458e+06|         -|   245772|     -|        no|        -|        -|   913 (~0%)|  1316 (~0%)|    -|
+    | + grp_preprocess_Pipeline_VITIS_LOOP_32_1_VITIS_LOOP_34_2_fu_354  |  Timing|  -0.00|   245772|  2.458e+06|         -|   245772|     -|        no|        -|        -|   977 (~0%)|  1316 (~0%)|    -|
     |  o VITIS_LOOP_32_1_VITIS_LOOP_34_2                                |      II|   7.30|   245770|  2.458e+06|        71|       60|  4096|       yes|        -|        -|           -|           -|    -|
-    | + grp_preprocess_Pipeline_VITIS_LOOP_100_1_fu_376                 |  Timing|  -0.00|     1026|  1.026e+04|         -|     1026|     -|        no|        -|        -|  1854 (~0%)|   3514 (1%)|    -|
+    | + grp_preprocess_Pipeline_VITIS_LOOP_100_1_fu_372                 |  Timing|  -0.00|     1026|  1.026e+04|         -|     1026|     -|        no|        -|        -|  1854 (~0%)|   3514 (1%)|    -|
     |  o VITIS_LOOP_100_1                                               |      II|   7.30|     1024|  1.024e+04|       257|      256|     4|       yes|        -|        -|           -|           -|    -|
-    | + grp_preprocess_Pipeline_VITIS_LOOP_135_1_fu_387                 |  Timing|  -0.00|       95|    950.000|         -|       95|     -|        no|        -|  15 (1%)|   629 (~0%)|   826 (~0%)|    -|
+    | + grp_preprocess_Pipeline_VITIS_LOOP_135_1_fu_383                 |  Timing|  -0.00|       95|    950.000|         -|       95|     -|        no|        -|  15 (1%)|   629 (~0%)|   826 (~0%)|    -|
     |  o VITIS_LOOP_135_1                                               |      II|   7.30|       93|    930.000|        30|       16|     5|       yes|        -|        -|           -|           -|    -|
     | o VITIS_LOOP_169_1                                                |       -|   7.30|  1254680|  1.255e+07|    250936|        -|     5|        no|        -|        -|           -|           -|    -|
     +-------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+---------+---------+------------+------------+-----+
@@ -43,7 +43,7 @@
 |              | (SW->HW)    |               |         |        |          | Bitwidth  | Burst Length | Burst Length | Outstanding | Outstanding |
 +--------------+-------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
 | m_axi_aximm1 | 65728 -> 32 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
-| m_axi_aximm2 | 16 -> 16    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm2 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
 | m_axi_aximm3 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
 | m_axi_aximm4 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
 | m_axi_aximm5 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
@@ -75,7 +75,7 @@
 | Argument          | Direction | Datatype        |
 +-------------------+-----------+-----------------+
 | input_data_packet | in        | SW_Data_Packet* |
-| input_all_peds    | in        | unsigned short* |
+| input_all_peds    | in        | unsigned int*   |
 | bounds            | in        | int*            |
 | zero_thresholds   | in        | int*            |
 | output_integrals  | inout     | int*            |
@@ -114,7 +114,7 @@
 +--------------+------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | HW Interface | Loop             | Message                                                                                                                                                                                                                   | Location                  |
 +--------------+------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| m_axi_aximm2 | VITIS_LOOP_16_1  | Multiple burst reads of length 4096 and bit width 16. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:16:22  |
+| m_axi_aximm2 | VITIS_LOOP_16_1  | Multiple burst reads of length 4096 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:16:22  |
 | m_axi_aximm3 | VITIS_LOOP_35_3  | Multiple burst reads of length 8 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.    | src/preprocess.cpp:35:30  |
 | m_axi_aximm4 | VITIS_LOOP_100_1 | Multiple burst reads of length 4 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.    | src/preprocess.cpp:100:23 |
 | m_axi_aximm5 | VITIS_LOOP_114_2 | Multiple burst reads of length 16 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.   | src/preprocess.cpp:114:27 |
@@ -139,7 +139,7 @@
 | m_axi_aximm4 | zero_thresholds   |                  | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:100:23 |
 | m_axi_aximm3 | bounds            |                  | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:35:30  |
 | m_axi_aximm1 | input_data_packet |                  | Could not widen since the size of type 'i16' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:16:22  |
-| m_axi_aximm2 | input_all_peds    |                  | Could not widen since the size of type 'i16' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:16:22  |
+| m_axi_aximm2 | input_all_peds    |                  | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:16:22  |
 +--------------+-------------------+------------------+-------------------------------------------------------------------------------------------------------------------+------------+---------------------------+
 
     * Resolution URL: www.xilinx.com/cgi-bin/docs/rdoc?v=2021.1;t=hls+guidance;d=XXX-YYY.html (replace XXX-YYY with column value)

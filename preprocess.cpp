@@ -8,10 +8,10 @@
 // char: 8 bit, short: 16 bit, long: 32 bit
 #include "preprocess.h"
 
-int16_t ped_sub_results[NUM_ALPHAS][NUM_SAMPLES][NUM_CHANNELS]; // Really 13 bits
+unsigned ped_sub_results[NUM_ALPHAS][NUM_SAMPLES][NUM_CHANNELS]; // Really 13 bits
 
 
-int ped_subtract(SW_Data_Packet * pkt, uint16_t *peds, uint8_t a) {
+int ped_subtract(SW_Data_Packet * pkt, unsigned *peds, unsigned a) {
     // calculate base address for integral
     for (unsigned s = 0; s < NUM_SAMPLES; ++s) {
         unsigned idx = (pkt->starting_sample_number + s) % NUM_SAMPLES;
@@ -23,7 +23,7 @@ int ped_subtract(SW_Data_Packet * pkt, uint16_t *peds, uint8_t a) {
     return 0;
 }
 
-int integrate(SW_Data_Packet * pkt, int *bounds, int32_t *integrals, uint8_t a) {
+int integrate(SW_Data_Packet * pkt, int *bounds, int *integrals, unsigned a) {
 
     //Assume fine_time > starting_sample_number, so base_addr is positive
     int base_addr = pkt->fine_time - pkt->starting_sample_number;
@@ -48,7 +48,7 @@ int integrate(SW_Data_Packet * pkt, int *bounds, int32_t *integrals, uint8_t a) 
 }
 
 
-int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_num, int32_t * integrals, uint8_t a) {
+int integrate_bad(int* base_addr, int rel_start, int rel_end, int integral_num, int * integrals, unsigned a) {
     // int start = data_packet->fine_time + rel_start - data_packet->starting_sample_number;
     int start = *base_addr + rel_start;
     if (start < 0) {
@@ -63,8 +63,8 @@ int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_nu
     if (end >= start) {
         linear = 1;
     }
-    int32_t temp_integrals[4][NUM_CHANNELS];
-    int32_t current_integral;
+    int temp_integrals[4][NUM_CHANNELS];
+    int current_integral;
     int i_gte_start = 0;
     int i_lte_end = 0;
     
@@ -96,7 +96,7 @@ int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_nu
     return 0;
 }
 
-int zero_suppress(int32_t * integrals, int32_t * thresholds) {
+int zero_suppress(int * integrals, int * thresholds) {
     for(unsigned i = 0; i < NUM_INTEGRALS; ++i) {
         for(unsigned c = 0; c < NUM_CHANNELS; ++c) {
             if(integrals[i*NUM_CHANNELS+c] < thresholds[i]) {
@@ -107,7 +107,7 @@ int zero_suppress(int32_t * integrals, int32_t * thresholds) {
     return 0;
 }
 
-int island_detection(int32_t * integrals, const uint8_t integral_num) {
+int island_detection(int * integrals, unsigned integral_num) {
     bool in_island = 0;
     int num_islands = 0;
     for (unsigned a = 0; a < NUM_ALPHAS; ++a) {
@@ -129,7 +129,7 @@ int island_detection(int32_t * integrals, const uint8_t integral_num) {
 
 }
 
-int centroiding(Centroid * centroid, int32_t *integrals, const uint8_t integral_num) {
+int centroiding(Centroid * centroid, int *integrals, unsigned integral_num) {
     int count = island_detection(integrals, integral_num);
     if (count > 0) {        
         for (unsigned a = 0; a < NUM_ALPHAS; ++a) {
@@ -152,10 +152,10 @@ int centroiding(Centroid * centroid, int32_t *integrals, const uint8_t integral_
 extern "C" {
     void preprocess(
 	        struct SW_Data_Packet * input_data_packet, // Read-Only Data Packet Struct
-	        uint16_t *input_all_peds, // Read-Only Pedestals
+	        unsigned *input_all_peds, // Read-Only Pedestals
             int * bounds, // Read-Only Integral Bounds
-            int32_t *zero_thresholds, // Read-Only Thresholds for zero-suppression
-	        int32_t *output_integrals,       // Output Result (Integrals)
+            int *zero_thresholds, // Read-Only Thresholds for zero-suppression
+	        int *output_integrals,       // Output Result (Integrals)
             struct Centroid *centroid // Output Centroid
 	        )
     {

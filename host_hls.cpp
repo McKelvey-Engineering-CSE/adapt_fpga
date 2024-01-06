@@ -56,7 +56,7 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
     data_packet->conf_address = 0b1111 & (buf[1] >> 9);
     data_packet->bank = 0b1 & (buf[1] >> 8);
     data_packet->fine_time = 0xff & buf[1];
-    data_packet->coarse_time = (((uint32_t) buf[2]) << 16) & (((uint32_t) buf[3]) & 0xffff);
+    data_packet->coarse_time = (((unsigned) buf[2]) << 16) & (((unsigned) buf[3]) & 0xffff);
     data_packet->trigger_number = buf[4];
     data_packet->samples_after_trigger = (buf[5] >> 8) & 0xff;
     data_packet->look_back_samples = buf[5] & 0xff;
@@ -83,7 +83,7 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
     return 0;
 }
 
-int peds_dat_to_arrays(int fd, uint16_t * all_peds){
+int peds_dat_to_arrays(int fd, unsigned * all_peds){
     FILE * fp = fdopen(fd, "r");
     if(fp == NULL) {
         perror("fdopen");
@@ -116,7 +116,7 @@ int peds_dat_to_arrays(int fd, uint16_t * all_peds){
     return 0;
 }
 
-int initialize_inputs(struct SW_Data_Packet * data_packet, uint16_t * all_peds) {
+int initialize_inputs(struct SW_Data_Packet * data_packet, unsigned * all_peds) {
     int data_packet_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/EventStream.dat", 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
@@ -134,7 +134,7 @@ int initialize_inputs(struct SW_Data_Packet * data_packet, uint16_t * all_peds) 
     return 0;
 }
 
-int write_header(int fd, const char * field, uint32_t value) {
+int write_header(int fd, const char * field, unsigned value) {
     char value_ptr[10];
     write(fd, field, strlen(field));
     write(fd, ": ", 2);
@@ -144,7 +144,7 @@ int write_header(int fd, const char * field, uint32_t value) {
     return 0;
 }
 
-int write_integrals(int fd, const char ** bounds, int32_t *integrals) {
+int write_integrals(int fd, const char ** bounds, int *integrals) {
     char value_ptr[10];
     for (int i = 0; i < 4; i++) {
         sprintf(value_ptr, "%d (%s,%s)", i, bounds[i*2], bounds[i*2+1]);
@@ -161,7 +161,7 @@ int write_integrals(int fd, const char ** bounds, int32_t *integrals) {
     return 0;
 }
 
-int write_output(int fd, const char ** bounds, int32_t *integrals, struct SW_Data_Packet * data_packet) {
+int write_output(int fd, const char ** bounds, int *integrals, struct SW_Data_Packet * data_packet) {
     write_header(fd, "i2c_address", data_packet->i2c_address);
     write_header(fd, "conf_address", data_packet->conf_address);
     write_header(fd, "bank", data_packet->bank);
@@ -178,7 +178,7 @@ int write_output(int fd, const char ** bounds, int32_t *integrals, struct SW_Dat
     return 0;
 }
 
-int produce_output(const char ** bounds, int32_t *integrals, struct SW_Data_Packet * data_packet) {
+int produce_output(const char ** bounds, int *integrals, struct SW_Data_Packet * data_packet) {
     int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
@@ -195,9 +195,9 @@ int produce_output(const char ** bounds, int32_t *integrals, struct SW_Data_Pack
 int main()
 {
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
-    uint16_t input_all_peds[NUM_ALPHAS*2*NUM_SAMPLES*NUM_CHANNELS];
+    unsigned input_all_peds[NUM_ALPHAS*2*NUM_SAMPLES*NUM_CHANNELS];
     int bounds[2*NUM_INTEGRALS];
-    int32_t output_integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
+    int output_integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
     Centroid centroid;
 
     // Initialize the data used in the test
@@ -217,12 +217,12 @@ int main()
     bounds[6] = atoi(bounds_strings[6]);
     bounds[7] = atoi(bounds_strings[7]);
 
-    int32_t zero_thresholds[NUM_INTEGRALS] = {-1000, -1000, -1000, 5};
+    int zero_thresholds[NUM_INTEGRALS] = {-1000, -1000, -1000, 5};
 
     preprocess( (SW_Data_Packet *) input_data_packet,
-                (uint16_t *) input_all_peds,
-                (int *) bounds, (int32_t *) zero_thresholds,
-                (int32_t *) output_integrals,
+                (unsigned *) input_all_peds,
+                (int *) bounds, (int *) zero_thresholds,
+                (int *) output_integrals,
                 (struct Centroid *) &centroid
                 );
 
@@ -233,7 +233,7 @@ int main()
 
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
         // produce_output(bounds_strings,
-        //                (int32_t *) output_integrals[alpha],
+        //                (int *) output_integrals[alpha],
         //                (SW_Data_Packet *) &input_data_packet[alpha]);
 
         unsigned integral_offset = alpha * NUM_INTEGRALS * NUM_CHANNELS;
