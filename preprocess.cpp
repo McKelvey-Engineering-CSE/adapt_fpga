@@ -17,7 +17,7 @@ Centroid local_centroid;
 
 void ped_subtract(const SW_Data_Packet * pkt, const vec_uint16_16 *peds, const uint8_t a) {
 
-    // #pragma HLS ARRAY_PARTITION variable=ped_sub_results type=complete dim=3
+	#pragma HLS ARRAY_PARTITION variable=ped_sub_results type=complete dim=2
 
     const uint8_t starting_sample_number = pkt->starting_sample_number;
     const uint8_t bank = pkt->bank;
@@ -46,7 +46,8 @@ void ped_subtract(const SW_Data_Packet * pkt, const vec_uint16_16 *peds, const u
 
 void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, const uint8_t a) {
 
-    // #pragma HLS ARRAY_PARTITION variable=ped_sub_results type=complete dim=3
+    #pragma HLS ARRAY_PARTITION variable=ped_sub_results type=complete dim=2
+    #pragma HLS ARRAY_PARTITION variable=integrals type=complete dim=2
 
     //Assume fine_time > starting_sample_number, so base_addr is positive
     int16_t base_addr = pkt->fine_time - pkt->starting_sample_number;
@@ -119,6 +120,10 @@ int integrate_bad(int8_t* base_addr, int rel_start, int rel_end, int integral_nu
 }
 
 void zero_suppress(const int32_t * thresholds, const uint8_t a) {
+
+    #pragma HLS ARRAY_PARTITION variable=integrals type=complete dim=2
+    #pragma HLS ARRAY_PARTITION variable=zeroed_integrals type=complete dim=2
+    
     zero_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
         #pragma HLS PIPELINE II=1
 
