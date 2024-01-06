@@ -11,7 +11,7 @@
 unsigned ped_sub_results[NUM_ALPHAS][NUM_SAMPLES][NUM_CHANNELS]; // Really 13 bits
 
 
-int ped_subtract(SW_Data_Packet * pkt, unsigned *peds, unsigned a) {
+void ped_subtract(SW_Data_Packet * pkt, unsigned *peds, unsigned a) {
     // calculate base address for integral
     for (unsigned s = 0; s < NUM_SAMPLES; ++s) {
         unsigned idx = (pkt->starting_sample_number + s) % NUM_SAMPLES;
@@ -20,10 +20,9 @@ int ped_subtract(SW_Data_Packet * pkt, unsigned *peds, unsigned a) {
             ped_sub_results[a][s][c] = pkt->samples[s][c] - peds[ped_idx];
         }
     }
-    return 0;
 }
 
-int integrate(SW_Data_Packet * pkt, int *bounds, int *integrals, unsigned a) {
+void integrate(SW_Data_Packet * pkt, int *bounds, int *integrals, unsigned a) {
 
     //Assume fine_time > starting_sample_number, so base_addr is positive
     int base_addr = pkt->fine_time - pkt->starting_sample_number;
@@ -43,8 +42,6 @@ int integrate(SW_Data_Packet * pkt, int *bounds, int *integrals, unsigned a) {
             }
         }
     }
-
-    return 0;
 }
 
 
@@ -96,7 +93,7 @@ int integrate_bad(int* base_addr, int rel_start, int rel_end, int integral_num, 
     return 0;
 }
 
-int zero_suppress(int * integrals, int * thresholds) {
+void zero_suppress(int * integrals, int * thresholds) {
     for(unsigned i = 0; i < NUM_INTEGRALS; ++i) {
         for(unsigned c = 0; c < NUM_CHANNELS; ++c) {
             if(integrals[i*NUM_CHANNELS+c] < thresholds[i]) {
@@ -104,7 +101,6 @@ int zero_suppress(int * integrals, int * thresholds) {
             }
         }
     }
-    return 0;
 }
 
 int island_detection(int * integrals, unsigned integral_num) {
