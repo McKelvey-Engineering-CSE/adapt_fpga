@@ -4,7 +4,7 @@
 == Synthesis Summary Report of 'preprocess'
 ================================================================
 + General Information: 
-    * Date:           Sat Jan  6 12:48:28 2024
+    * Date:           Sat Jan  6 13:59:23 2024
     * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
     * Project:        sw_emu_project
     * Solution:       solution1 (Vivado IP Flow Target)
@@ -129,18 +129,18 @@
 +--------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | HW Interface | Loop      | Message                                                                                                                                                                                                                        | Location                  |
 +--------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| m_axi_aximm6 |           | Multiple burst writes of variable length and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:118:15 |
-| m_axi_aximm5 | anonymous | Multiple burst writes of length 320 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:119:5  |
+| m_axi_aximm6 |           | Multiple burst writes of variable length and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:117:15 |
+| m_axi_aximm5 | anonymous | Multiple burst writes of length 320 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:118:5  |
 +--------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 
 * Bursts and Widening Missed
 +--------------+-------------------+-------------+-------------------------------------------------------------------------------------------------------------------+------------+---------------------------+
 | HW Interface | Variable          | Loop        | Problem                                                                                                           | Resolution | Location                  |
 +--------------+-------------------+-------------+-------------------------------------------------------------------------------------------------------------------+------------+---------------------------+
-| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:141:15 |
-| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:141:15 |
-| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:141:15 |
-| m_axi_aximm5 | output_integrals  |             | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:119:5  |
+| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:139:15 |
+| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:139:15 |
+| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:139:15 |
+| m_axi_aximm5 | output_integrals  |             | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:118:5  |
 | m_axi_aximm1 | input_data_packet |             | Could not widen since the size of type 'i16' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:25:18  |
 +--------------+-------------------+-------------+-------------------------------------------------------------------------------------------------------------------+------------+---------------------------+
 

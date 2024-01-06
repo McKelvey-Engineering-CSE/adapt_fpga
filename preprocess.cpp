@@ -48,7 +48,6 @@ void integrate(const SW_Data_Packet * pkt, const int16_t *bounds, const uint8_t 
             const int16_t end = bounds[2*i+1];
             int32_t current_integral = 0;
             int_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
-                #pragma HLS UNROLL factor=256
                 const int16_t x = s - base_addr;
                 current_integral =
                     ((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) ?
@@ -130,7 +129,6 @@ extern "C" {
 	        )
     {
 #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet bundle=aximm1
-// #pragma HLS array_partition variable=input_data_packet type=block factor=5
 #pragma HLS INTERFACE mode=bram depth=40960 port=input_all_peds
 #pragma HLS INTERFACE mode=bram depth=1 port=bounds
 #pragma HLS array_partition variable=bounds type=block factor=4
