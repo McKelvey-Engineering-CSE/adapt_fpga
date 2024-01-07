@@ -4,7 +4,7 @@
 == Synthesis Summary Report of 'preprocess'
 ================================================================
 + General Information: 
-    * Date:           Sat Jan  6 13:59:23 2024
+    * Date:           Sat Jan  6 19:42:47 2024
     * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
     * Project:        sw_emu_project
     * Solution:       solution1 (Vivado IP Flow Target)
@@ -19,17 +19,17 @@
     |                             Modules                            |  Issue |       | Latency |  Latency  | Iteration|         | Trip |          |         |         |             |             |     |
     |                             & Loops                            |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count| Pipelined|  BRAM   |   DSP   |      FF     |     LUT     | URAM|
     +----------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+---------+---------+-------------+-------------+-----+
-    |+ preprocess                                                    |  Timing|  -0.00|    22411|  2.241e+05|         -|    22412|     -|        no|  44 (4%)|  43 (5%)|  91125 (22%)|  95209 (46%)|    -|
-    | + grp_centroiding_fu_335                                       |       -|   0.01|       41|    410.000|         -|       41|     -|        no|        -|  43 (5%)|   2037 (~0%)|    9900 (4%)|    -|
-    |  + grp_island_detection_fu_541                                 |       -|   0.07|       13|    130.000|         -|       13|     -|        no|        -|        -|    465 (~0%)|    6202 (3%)|    -|
-    | + grp_preprocess_Pipeline_ped_samples_ped_channels_fu_375      |  Timing|  -0.00|     4106|  4.106e+04|         -|     4106|     -|        no|        -|        -|    420 (~0%)|    551 (~0%)|    -|
+    |+ preprocess                                                    |  Timing|  -0.00|    22411|  2.241e+05|         -|    22412|     -|        no|  48 (5%)|  43 (5%)|  91255 (22%)|  95582 (46%)|    -|
+    | + grp_centroiding_fu_347                                       |       -|   0.01|       41|    410.000|         -|       41|     -|        no|        -|  43 (5%)|   2027 (~0%)|    9900 (4%)|    -|
+    |  + grp_island_detection_fu_543                                 |       -|   0.07|       13|    130.000|         -|       13|     -|        no|        -|        -|    465 (~0%)|    6202 (3%)|    -|
+    | + grp_preprocess_Pipeline_ped_samples_ped_channels_fu_389      |  Timing|  -0.00|     4106|  4.106e+04|         -|     4106|     -|        no|        -|        -|    420 (~0%)|    551 (~0%)|    -|
     |  o ped_samples_ped_channels                                    |       -|   7.30|     4104|  4.104e+04|        10|        1|  4096|       yes|        -|        -|            -|            -|    -|
-    | + grp_integrate_fu_421                                         |  Timing|  -0.00|      279|  2.790e+03|         -|      279|     -|        no|        -|        -|  84212 (20%)|  78083 (38%)|    -|
+    | + grp_integrate_fu_435                                         |  Timing|  -0.00|      279|  2.790e+03|         -|      279|     -|        no|        -|        -|  84212 (20%)|  78083 (38%)|    -|
     |  + grp_integrate_Pipeline_int_channels_int_integrals_fu_34228  |       -|   0.06|      150|  1.500e+03|         -|      150|     -|        no|        -|        -|   12834 (3%)|  43549 (21%)|    -|
     |   o int_channels_int_integrals                                 |       -|   7.30|      148|  1.480e+03|        86|        1|    64|       yes|        -|        -|            -|            -|    -|
-    | + grp_zero_suppress_fu_501                                     |       -|   2.83|        6|     60.000|         -|        6|     -|        no|        -|        -|     11 (~0%)|    743 (~0%)|    -|
+    | + grp_zero_suppress_fu_515                                     |       -|   2.83|        6|     60.000|         -|        6|     -|        no|        -|        -|     11 (~0%)|    743 (~0%)|    -|
     |  o zero_integrals                                              |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|        -|        -|            -|            -|    -|
-    | + grp_preprocess_Pipeline_2_fu_572                             |  Timing|  -0.00|      323|  3.230e+03|         -|      323|     -|        no|        -|        -|     51 (~0%)|    141 (~0%)|    -|
+    | + grp_preprocess_Pipeline_2_fu_586                             |  Timing|  -0.00|      323|  3.230e+03|         -|      323|     -|        no|        -|        -|     51 (~0%)|    141 (~0%)|    -|
     |  o Loop 1                                                      |       -|   7.30|      321|  3.210e+03|         3|        1|   320|       yes|        -|        -|            -|            -|    -|
     | o loop_alphas                                                  |       -|   7.30|    22035|  2.204e+05|      4407|        -|     5|        no|        -|        -|            -|            -|    -|
     +----------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+---------+---------+-------------+-------------+-----+
@@ -45,7 +45,7 @@
 +--------------+-------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
 | m_axi_aximm1 | 65728 -> 32 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
 | m_axi_aximm5 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
-| m_axi_aximm6 | 32 -> 32    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm6 | 48 -> 64    | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
 +--------------+-------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
 
 * S_AXILITE
@@ -129,18 +129,18 @@
 +--------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | HW Interface | Loop      | Message                                                                                                                                                                                                                        | Location                  |
 +--------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| m_axi_aximm6 |           | Multiple burst writes of variable length and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:117:15 |
-| m_axi_aximm5 | anonymous | Multiple burst writes of length 320 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:118:5  |
+| m_axi_aximm6 |           | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:118:15 |
+| m_axi_aximm5 | anonymous | Multiple burst writes of length 320 and bit width 32. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:119:5  |
 +--------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 
 * Bursts and Widening Missed
 +--------------+-------------------+-------------+-------------------------------------------------------------------------------------------------------------------+------------+---------------------------+
 | HW Interface | Variable          | Loop        | Problem                                                                                                           | Resolution | Location                  |
 +--------------+-------------------+-------------+-------------------------------------------------------------------------------------------------------------------+------------+---------------------------+
-| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:139:15 |
-| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:139:15 |
-| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:139:15 |
-| m_axi_aximm5 | output_integrals  |             | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:118:5  |
+| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:140:15 |
+| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:140:15 |
+| m_axi_aximm1 | input_data_packet | loop_alphas | Stride is incompatible                                                                                            | 214-230    | src/preprocess.cpp:140:15 |
+| m_axi_aximm5 | output_integrals  |             | Could not widen since the size of type 'i32' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:119:5  |
 | m_axi_aximm1 | input_data_packet |             | Could not widen since the size of type 'i16' is greater than or equal to the max_widen_bitwidth threshold of '0'. |            | src/preprocess.cpp:25:18  |
 +--------------+-------------------+-------------+-------------------------------------------------------------------------------------------------------------------+------------+---------------------------+
 
