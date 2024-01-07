@@ -45,54 +45,6 @@ void integrate(SW_Data_Packet * pkt, int *bounds, int *integrals, unsigned a) {
 }
 
 
-int integrate_bad(int* base_addr, int rel_start, int rel_end, int integral_num, int * integrals, unsigned a) {
-    // int start = data_packet->fine_time + rel_start - data_packet->starting_sample_number;
-    int start = *base_addr + rel_start;
-    if (start < 0) {
-        start = start + NUM_SAMPLES - 1;
-    }
-    // int end = data_packet->fine_time + rel_end - data_packet->starting_sample_number;
-    int end = *base_addr + rel_end;
-    if (end >= NUM_SAMPLES - 1) {
-        end = end - (NUM_SAMPLES - 1);
-    }
-    int linear = 0;
-    if (end >= start) {
-        linear = 1;
-    }
-    int temp_integrals[4][NUM_CHANNELS];
-    int current_integral;
-    int i_gte_start = 0;
-    int i_lte_end = 0;
-    
-    integral_l0: for (int i = 0; i < NUM_SAMPLES; i++) {
-        integral_l1: for (int j = 0; j < NUM_CHANNELS; j++) {
-            #pragma HLS PIPELINE II=1
-
-            current_integral = (i>0) ? temp_integrals[integral_num][j] : 0;
-            i_gte_start = (i >= start);
-            i_lte_end = (i <= end);
-            if ((i_gte_start && i_lte_end) || (!linear && (i_gte_start || i_lte_end)) ) {
-        if(j == 0)
-        printf("sample %d, base_addr %d, inside bounds [%d,%d] for integral %d\n", i, *base_addr, 
-        start, end, integral_num);
-                temp_integrals[integral_num][j] = current_integral + ped_sub_results[a][i][j];
-            }
-            else {
-                 temp_integrals[integral_num][j] = current_integral;
-            }
-            
-            // #pragma HLS DEPENDENCE variable=temp_integrals false
-            // I think this should be fine, since it's what they do in the example and it's a WAR dependency...
-        }
-    }
-    // Need to transfer from the temporary buffer to the output
-    integral_out_l0: for (int i = 0; i < NUM_CHANNELS; i++) {
-        integrals[integral_num*NUM_CHANNELS+i] = temp_integrals[integral_num][i];
-    }
-    return 0;
-}
-
 void zero_suppress(int * integrals, int * thresholds) {
     for(unsigned i = 0; i < NUM_INTEGRALS; ++i) {
         for(unsigned c = 0; c < NUM_CHANNELS; ++c) {
@@ -174,12 +126,6 @@ extern "C" {
                       bounds,
                       output_integrals + integral_offset,
                       alpha);
-        
-            // int8_t base_addr = input_data_packet->fine_time - input_data_packet->starting_sample_number;
-            // integrate_bad(&base_addr, bounds[0], bounds[1], 0, output_integrals);
-            // integrate_bad(&base_addr, bounds[2], bounds[3], 1, output_integrals);
-            // integrate_bad(&base_addr, bounds[4], bounds[5], 2, output_integrals);
-            // integrate_bad(&base_addr, bounds[6], bounds[7], 3, output_integrals);
             
             zero_suppress(output_integrals + integral_offset, zero_thresholds);
 
