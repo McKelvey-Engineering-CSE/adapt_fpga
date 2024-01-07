@@ -17,17 +17,11 @@ Centroid local_centroid;
 void read_params(const SW_Data_Packet* data_packet,
                  uint8_t &bank,
                  uint8_t &starting_sample_number,
-                 int16_t &base_addr,
-                 const int16_t *bounds,
-                 int16_t *local_bounds,
-                 const int32_t *zero_thresholds,
-                 int32_t *local_zero_thresholds) {
+                 int16_t &base_addr) {
 	bank = data_packet->bank;
     starting_sample_number = data_packet->starting_sample_number;
     base_addr = data_packet->fine_time - data_packet->starting_sample_number;
     base_addr = (base_addr < 0) ? base_addr + NUM_SAMPLES : base_addr;
-    memcpy(local_bounds,bounds,2*NUM_INTEGRALS*sizeof(int16_t));
-    memcpy(local_zero_thresholds,zero_thresholds,NUM_INTEGRALS*sizeof(int32_t));
 }
 
 static void read_samples(const vec_uint16_16 * samples,
@@ -118,14 +112,14 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
     }
 }
 
-void copy_outputs(hls::stream<vec_int32_16> & zeroed_integrals, const uint8_t alpha) {
-    vec_int32_16 integral;
+// void copy_outputs(hls::stream<vec_int32_16> & zeroed_integrals, const uint8_t alpha) {
+//     vec_int32_16 integral;
 
-    copy_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-        integral = zeroed_integrals.read();
-        // zeroed_integrals_global[alpha][i] = integral;
-    }
-}
+//     copy_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+//         integral = zeroed_integrals.read();
+//         // zeroed_integrals_global[alpha][i] = integral;
+//     }
+// }
 
 void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
                      hls::stream<vec_int32_16> & merged_integrals) {
@@ -143,8 +137,8 @@ void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
 void island_detection(hls::stream<vec_int32_16> & merged_integrals,
                          hls::stream<vec_int32_16> & island_output,
                          hls::stream<int16_t> & stream_num_islands) {
-    bool in_island = 0;
-    int16_t num_islands = 0;
+    bool in_island_tmp;
+    int16_t num_islands_tmp;
     vec_int32_16 integral;
     island_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
         island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
@@ -153,7 +147,8 @@ void island_detection(hls::stream<vec_int32_16> & merged_integrals,
             if (i == INTEGRAL_NUM) {
 
                 island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-
+                    bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
+                    int16_t num_islands = (a == 0 && c == 0) ? 0 : num_islands_tmp;
                     if(integral[c] && !in_island) {
                         in_island = true;
                         ++num_islands;
@@ -161,12 +156,15 @@ void island_detection(hls::stream<vec_int32_16> & merged_integrals,
                     else if (!integral[c] && in_island) {
                         in_island = false;
                     }
+                    in_island_tmp = in_island;
+                    num_islands_tmp = num_islands;
                 }
             }
 
             island_output << integral;
         }
-        if (i == INTEGRAL_NUM) stream_num_islands << num_islands;
+        if (i == INTEGRAL_NUM)
+            stream_num_islands << num_islands_tmp;
     }
 
 }
@@ -175,10 +173,9 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
                  hls::stream<int16_t> & stream_num_islands,
                  hls::stream<vec_int32_16> & centroiding_output,
                  hls::stream<Centroid> & stream_centroid) {
-    uint16_t position = 0;
-    uint16_t signal = 0;  
+    uint16_t position_tmp;
+    uint16_t signal_tmp;  
     vec_int32_16 integral;
-    int16_t num_islands;
     Centroid centroid;
     centroiding_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
         centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
@@ -187,10 +184,13 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
             if (i == INTEGRAL_NUM) {
 
                 centroiding_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-                    #pragma HLS UNROLL factor=16
+                    uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
+                    uint16_t signal = (a == 0 && c == 0) ? 0 : signal_tmp;
                     const uint16_t pos = a * NUM_CHANNELS + c;
                     position += pos * integral[c];
                     signal += integral[c];
+                    position_tmp = position;
+                    signal_tmp = signal;
                 }
             }
 
@@ -198,8 +198,8 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
         }
         if (i == INTEGRAL_NUM) {
             centroid.count = stream_num_islands.read();        
-            centroid.position = (centroid.count > 0) ? position / signal : 0;
-            centroid.signal = (centroid.count > 0) ? signal : 0;
+            centroid.position = (centroid.count > 0) ? position_tmp / signal_tmp : 0;
+            centroid.signal = (centroid.count > 0) ? signal_tmp : 0;
             stream_centroid << centroid;
         }
     }
@@ -222,7 +222,8 @@ void write_integrals(hls::stream<vec_int32_16> & centroiding_output,
 
 void write_centroid(hls::stream<Centroid> & stream_centroid,
                     Centroid * centroid) {
-    Centroid local_centroid = stream_centroid.read();    
+    Centroid local_centroid;
+    local_centroid = stream_centroid.read();   
     *centroid = local_centroid;
 }
 
@@ -404,8 +405,8 @@ extern "C" {
 	        const struct SW_Data_Packet * input_data_packet3, // Read-Only Data Packet Struct
 	        const struct SW_Data_Packet * input_data_packet4, // Read-Only Data Packet Struct
 	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
-            const int16_t bounds[2*NUM_INTEGRALS], // Read-Only Integral Bounds
-            const int32_t zero_thresholds[NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
+            const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+            const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
             struct Centroid *centroid // Output Centroid
 	        )
@@ -426,8 +427,6 @@ extern "C" {
         uint8_t banks[NUM_ALPHAS];
         uint8_t starting_sample_numbers[NUM_ALPHAS];
         int16_t base_addrs[NUM_ALPHAS];
-        int16_t local_bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
-        int32_t local_zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS];
 
         loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
             const SW_Data_Packet * input_data_packet;
@@ -443,11 +442,7 @@ extern "C" {
             read_params(input_data_packet,
                         banks[alpha],
                         starting_sample_numbers[alpha],
-                        base_addrs[alpha],
-                        bounds,
-                        local_bounds[alpha],
-                        zero_thresholds,
-                        local_zero_thresholds[alpha]);
+                        base_addrs[alpha]);
         }
 
         dataflow(input_data_packet0,
@@ -456,8 +451,8 @@ extern "C" {
                  input_data_packet3,
                  input_data_packet4,
                  input_all_peds,
-                 local_bounds,
-                 local_zero_thresholds,
+                 bounds,
+                 zero_thresholds,
                  output_integrals,
                  centroid,
                  banks,

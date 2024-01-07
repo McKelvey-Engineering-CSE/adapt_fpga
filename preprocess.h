@@ -22,8 +22,8 @@ extern "C" {
 	        const struct SW_Data_Packet * input_data_packet3, // Read-Only Data Packet Struct
 	        const struct SW_Data_Packet * input_data_packet4, // Read-Only Data Packet Struct
 	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
-            const int16_t bounds[2*NUM_INTEGRALS], // Read-Only Integral Bounds
-            const int32_t zero_thresholds[NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
+            const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+            const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
             struct Centroid *centroid // Output Centroid
 	);
