@@ -12,6 +12,7 @@ typedef hls::vector<uint32_t, 16> vec_uint32_16;
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
 #define NUM_INTEGRALS 4
 #define NUM_ALPHAS 5
+#define INTEGRAL_NUM 3
 
 extern "C" {
     void preprocess(
@@ -23,7 +24,7 @@ extern "C" {
 	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
             const int16_t bounds[2*NUM_INTEGRALS], // Read-Only Integral Bounds
             const int32_t zero_thresholds[NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-	        int32_t *output_integrals,       // Output Result (Integrals)
+	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
             struct Centroid *centroid // Output Centroid
 	);
 }
@@ -53,6 +54,7 @@ struct SW_Data_Packet {
 struct Centroid {
     uint16_t position;
     uint16_t signal;
+    int16_t count;
 };
 
 

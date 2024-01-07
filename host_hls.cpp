@@ -144,7 +144,7 @@ int write_header(int fd, const char * field, uint32_t value) {
     return 0;
 }
 
-int write_integrals(int fd, const char ** bounds, int32_t *integrals) {
+int write_integrals(int fd, const char ** bounds, vec_int32_16 *integrals) {
     char value_ptr[10];
     for (int i = 0; i < 4; i++) {
         sprintf(value_ptr, "%d (%s,%s)", i, bounds[i*2], bounds[i*2+1]);
@@ -152,7 +152,8 @@ int write_integrals(int fd, const char ** bounds, int32_t *integrals) {
         write(fd, "   ", 3);
         for (int j = 0; j < NUM_CHANNELS; j++) {
             //sprintf(value_ptr, "%d", integrals[i][j]);
-            sprintf(value_ptr, "%d", *(integrals+i*NUM_CHANNELS+j));
+
+            sprintf(value_ptr, "%d", integrals[i][j]);
             write(fd, " ", 1);
             write(fd, value_ptr, strlen(value_ptr));
         }
@@ -161,7 +162,7 @@ int write_integrals(int fd, const char ** bounds, int32_t *integrals) {
     return 0;
 }
 
-int write_output(int fd, const char ** bounds, int32_t *integrals, struct SW_Data_Packet * data_packet) {
+int write_output(int fd, const char ** bounds, vec_int32_16 *integrals, struct SW_Data_Packet * data_packet) {
     write_header(fd, "i2c_address", data_packet->i2c_address);
     write_header(fd, "conf_address", data_packet->conf_address);
     write_header(fd, "bank", data_packet->bank);
@@ -178,7 +179,7 @@ int write_output(int fd, const char ** bounds, int32_t *integrals, struct SW_Dat
     return 0;
 }
 
-int produce_output(const char ** bounds, int32_t *integrals, struct SW_Data_Packet * data_packet) {
+int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data_Packet * data_packet) {
     int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
@@ -198,7 +199,7 @@ int main()
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
     vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
     int16_t bounds[2*NUM_INTEGRALS];
-    int32_t output_integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
+    vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
     Centroid centroid;
 
     // // Initialize the data used in the test
@@ -228,7 +229,7 @@ int main()
                 input_all_peds,
                 bounds,
                 zero_thresholds,
-                (int32_t *) output_integrals,
+                output_integrals,
                 (struct Centroid *) &centroid
                 );
 
@@ -242,15 +243,15 @@ int main()
         //                (int32_t *) output_integrals[alpha],
         //                (SW_Data_Packet *) &input_data_packet[alpha]);
 
-        unsigned integral_offset = alpha * NUM_INTEGRALS * NUM_CHANNELS;
         write_output(output_fd,
                      bounds_strings,
-                     output_integrals + integral_offset,
+                     output_integrals[alpha],
                      input_data_packet + alpha);
     }
 
     write_header(output_fd, "centroid_position", centroid.position);
     write_header(output_fd, "centroid_signal", centroid.signal);
+    write_header(output_fd, "centroid_count", centroid.count);
 
     return 0;
 }
