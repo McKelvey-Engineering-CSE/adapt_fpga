@@ -64,32 +64,29 @@ void integrate(const int16_t base_addr,
               const int16_t *bounds,
               hls::stream<vec_int32_16> & integrals) {
 
-    vec_int32_16 samples;
-    vec_int32_16 tmp_integrals[NUM_INTEGRALS];
-    // #pragma HLS ARRAY_PARTITION variable=tmp_integrals type=complete dim=1
+    vec_int32_16 prefix_sums[NUM_SAMPLES+1];
+    vec_int32_16 current = 0;
+    vec_int32_16 tmp;
+
+    prefix_sums[0] = 0;
 
     int_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
 
-        samples = ped_sub_results.read();
+        tmp = ped_sub_results.read();
+        current += tmp;
+        prefix_sums[s+1] = current;
 
-        int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-            #pragma HLS UNROLL factor=4
-            const int16_t start = bounds[2*i];
-            const int16_t end = bounds[2*i+1];
-            vec_int32_16 current_integral = (s == 0) ? 0 : tmp_integrals[i];
-        
-            const int16_t x = s - base_addr;
-            current_integral =
-                ((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) ?
-                current_integral + samples :
-                current_integral;
-            tmp_integrals[i] = current_integral;
-
-        }
     }
 
-    for (int i = 0; i < NUM_INTEGRALS; ++i) {
-        integrals << tmp_integrals[i];
+    int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+        int16_t start = bounds[2*i] + base_addr;
+        start = (start < 0) ? start + NUM_SAMPLES : start;
+        int16_t end = bounds[2*i+1] + base_addr;
+        end = (end>=NUM_SAMPLES) ? end - NUM_SAMPLES : end;
+        vec_int32_16 integral = (end<start) ?
+            prefix_sums[NUM_SAMPLES] - prefix_sums[start] + prefix_sums[end+1] :
+            prefix_sums[end+1]-prefix_sums[start];
+        integrals << integral;
     }
 }
 
