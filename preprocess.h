@@ -43,6 +43,7 @@ struct SW_Data_Packet {
 struct Centroid {
     uint16_t position;
     uint16_t signal;
+    int16_t count;
 };
 
 
