@@ -4,7 +4,7 @@
 == Synthesis Summary Report of 'preprocess'
 ================================================================
 + General Information: 
-    * Date:           Sun Jan  7 05:05:56 2024
+    * Date:           Sun Jan  7 16:14:06 2024
     * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
     * Project:        sw_emu_project
     * Solution:       solution1 (Vivado IP Flow Target)
@@ -15,98 +15,98 @@
 + Performance & Resource Estimates: 
     
     PS: '+' for module; 'o' for loop; '*' for dataflow
-    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+-------------+-------------+-----+
-    |                            Modules                           |  Issue |       | Latency |  Latency  | Iteration|         | Trip |          |           |         |             |             |     |
-    |                            & Loops                           |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count| Pipelined|   BRAM    |   DSP   |      FF     |     LUT     | URAM|
-    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+-------------+-------------+-----+
-    |+ preprocess                                                  |  Timing|  -0.00|      298|  2.980e+03|         -|      299|     -|        no|  668 (75%)|  15 (1%)|  44345 (10%)|  88148 (43%)|    -|
-    | + grp_dataflow_fu_662*                                       |  Timing|  -0.00|      279|  2.790e+03|         -|      274|     -|  dataflow|  452 (50%)|  15 (1%)|   31972 (7%)|  62802 (30%)|    -|
-    |  + add_ln330_loc_channel_dataflow_Block_split1_proc_fu_812   |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|     66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln339_loc_channel_dataflow_Block_split13_proc_fu_818  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|     66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln348_loc_channel_dataflow_Block_split15_proc_fu_824  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|     66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln357_loc_channel_dataflow_Block_split17_proc_fu_830  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|     66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln366_loc_channel_dataflow_Block_split19_proc_fu_836  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|     66 (~0%)|     91 (~0%)|    -|
-    |  + grp_dataflow_alpha8_fu_842*                               |  Timing|  -0.00|      279|  2.790e+03|         -|      274|     -|  dataflow|    73 (8%)|        -|   4073 (~0%)|   10304 (5%)|    -|
-    |   + grp_read_samples13_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|    341 (~0%)|    286 (~0%)|    -|
-    |    + grp_read_samples13_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|    271 (~0%)|     87 (~0%)|    -|
-    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_ped_subtract14_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|     12 (~0%)|    488 (~0%)|    -|
-    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_integrate15_fu_163                                   |       -|   2.16|      273|  2.730e+03|         -|      273|     -|        no|          -|        -|   3244 (~0%)|    8231 (4%)|    -|
-    |    + grp_integrate15_Pipeline_int_samples_fu_1107            |       -|   2.19|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   2073 (~0%)|    6910 (3%)|    -|
-    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |    + grp_integrate15_Pipeline_VITIS_LOOP_91_1_fu_1188        |       -|   3.61|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|     69 (~0%)|    -|
-    |     o VITIS_LOOP_91_1                                        |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |   + grp_zero_suppress16_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|   1019 (~0%)|    -|
-    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |  + grp_dataflow_alpha9_fu_877*                               |  Timing|  -0.00|      279|  2.790e+03|         -|      274|     -|  dataflow|    73 (8%)|        -|   4072 (~0%)|   10295 (5%)|    -|
-    |   + grp_read_samples17_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|    341 (~0%)|    286 (~0%)|    -|
-    |    + grp_read_samples17_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|    271 (~0%)|     87 (~0%)|    -|
-    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_ped_subtract18_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|     12 (~0%)|    488 (~0%)|    -|
-    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_integrate19_fu_163                                   |       -|   2.16|      273|  2.730e+03|         -|      273|     -|        no|          -|        -|   3244 (~0%)|    8231 (4%)|    -|
-    |    + grp_integrate19_Pipeline_int_samples_fu_1107            |       -|   2.19|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   2073 (~0%)|    6910 (3%)|    -|
-    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |    + grp_integrate19_Pipeline_VITIS_LOOP_91_1_fu_1188        |       -|   3.61|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|     69 (~0%)|    -|
-    |     o VITIS_LOOP_91_1                                        |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |   + grp_zero_suppress20_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|   1019 (~0%)|    -|
-    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |  + grp_dataflow_alpha10_fu_912*                              |  Timing|  -0.00|      279|  2.790e+03|         -|      274|     -|  dataflow|    73 (8%)|        -|   4072 (~0%)|   10295 (5%)|    -|
-    |   + grp_read_samples21_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|    341 (~0%)|    286 (~0%)|    -|
-    |    + grp_read_samples21_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|    271 (~0%)|     87 (~0%)|    -|
-    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_ped_subtract22_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|     12 (~0%)|    488 (~0%)|    -|
-    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_integrate23_fu_163                                   |       -|   2.16|      273|  2.730e+03|         -|      273|     -|        no|          -|        -|   3244 (~0%)|    8231 (4%)|    -|
-    |    + grp_integrate23_Pipeline_int_samples_fu_1107            |       -|   2.19|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   2073 (~0%)|    6910 (3%)|    -|
-    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |    + grp_integrate23_Pipeline_VITIS_LOOP_91_1_fu_1188        |       -|   3.61|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|     69 (~0%)|    -|
-    |     o VITIS_LOOP_91_1                                        |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |   + grp_zero_suppress24_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|   1019 (~0%)|    -|
-    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |  + grp_dataflow_alpha11_fu_947*                              |  Timing|  -0.00|      279|  2.790e+03|         -|      274|     -|  dataflow|    73 (8%)|        -|   4072 (~0%)|   10295 (5%)|    -|
-    |   + grp_read_samples25_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|    341 (~0%)|    286 (~0%)|    -|
-    |    + grp_read_samples25_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|    271 (~0%)|     87 (~0%)|    -|
-    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_ped_subtract26_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|     12 (~0%)|    488 (~0%)|    -|
-    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_integrate27_fu_163                                   |       -|   2.16|      273|  2.730e+03|         -|      273|     -|        no|          -|        -|   3244 (~0%)|    8231 (4%)|    -|
-    |    + grp_integrate27_Pipeline_int_samples_fu_1107            |       -|   2.19|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   2073 (~0%)|    6910 (3%)|    -|
-    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |    + grp_integrate27_Pipeline_VITIS_LOOP_91_1_fu_1188        |       -|   3.61|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|     69 (~0%)|    -|
-    |     o VITIS_LOOP_91_1                                        |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |   + grp_zero_suppress28_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|   1019 (~0%)|    -|
-    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |  + grp_dataflow_alpha12_fu_982*                              |  Timing|  -0.00|      279|  2.790e+03|         -|      274|     -|  dataflow|    73 (8%)|        -|   4072 (~0%)|   10295 (5%)|    -|
-    |   + grp_read_samples29_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|    341 (~0%)|    286 (~0%)|    -|
-    |    + grp_read_samples29_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|    271 (~0%)|     87 (~0%)|    -|
-    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_ped_subtract30_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|     12 (~0%)|    488 (~0%)|    -|
-    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |   + grp_integrate31_fu_163                                   |       -|   2.16|      273|  2.730e+03|         -|      273|     -|        no|          -|        -|   3244 (~0%)|    8231 (4%)|    -|
-    |    + grp_integrate31_Pipeline_int_samples_fu_1107            |       -|   2.19|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   2073 (~0%)|    6910 (3%)|    -|
-    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|            -|            -|    -|
-    |    + grp_integrate31_Pipeline_VITIS_LOOP_91_1_fu_1188        |       -|   3.61|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|     69 (~0%)|    -|
-    |     o VITIS_LOOP_91_1                                        |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |   + grp_zero_suppress32_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|      6 (~0%)|   1019 (~0%)|    -|
-    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|            -|            -|    -|
-    |  + grp_merge_integrals_fu_1017                               |       -|   1.29|       22|    220.000|         -|       22|     -|        no|          -|        -|     16 (~0%)|   1266 (~0%)|    -|
-    |   o VITIS_LOOP_127_1_VITIS_LOOP_128_2                        |       -|   7.30|       20|    200.000|         2|        1|    20|       yes|          -|        -|            -|            -|    -|
-    |  + grp_island_detection_fu_1103                              |  Timing|  -0.00|      105|  1.050e+03|         -|      105|     -|        no|          -|        -|    158 (~0%)|   1289 (~0%)|    -|
-    |   + grp_island_detection_Pipeline_island_alphas_fu_67        |  Timing|  -0.00|       23|    230.000|         -|       23|     -|        no|          -|        -|    127 (~0%)|   1182 (~0%)|    -|
-    |    o island_alphas                                           |      II|   7.30|       21|    210.000|         6|        4|     5|       yes|          -|        -|            -|            -|    -|
-    |   o island_integrals                                         |       -|   7.30|      104|  1.040e+03|        26|        -|     4|        no|          -|        -|            -|            -|    -|
-    |  + grp_centroiding_fu_1112                                   |       -|   0.49|      137|  1.370e+03|         -|      137|     -|        no|          -|  15 (1%)|    850 (~0%)|   1182 (~0%)|    -|
-    |   + grp_centroiding_Pipeline_centroiding_alphas_fu_92        |       -|   0.49|       12|    120.000|         -|       12|     -|        no|          -|  15 (1%)|    551 (~0%)|    802 (~0%)|    -|
-    |    o centroiding_alphas                                      |       -|   7.30|       10|    100.000|         7|        1|     5|       yes|          -|        -|            -|            -|    -|
-    |   o centroiding_integrals                                    |       -|   7.30|      136|  1.360e+03|        34|        -|     4|        no|          -|        -|            -|            -|    -|
-    |  + call_ret_entry_proc_fu_1122                               |       -|   7.30|        0|      0.000|         -|        0|     -|        no|          -|        -|    130 (~0%)|     29 (~0%)|    -|
-    |  + grp_write_integrals_fu_1130                               |  Timing|  -0.00|       28|    280.000|         -|       28|     -|        no|          -|        -|    596 (~0%)|    245 (~0%)|    -|
-    |   o write_integrals_integrals_write_integrals_alphas         |       -|   7.30|       26|    260.000|         8|        1|    20|       yes|          -|        -|            -|            -|    -|
-    |  + grp_write_centroid_fu_1139                                |  Timing|  -0.00|        8|     80.000|         -|        8|     -|        no|          -|        -|    239 (~0%)|    493 (~0%)|    -|
-    | o loop_alphas                                                |       -|   7.30|        5|     50.000|         1|        1|     5|       yes|          -|        -|            -|            -|    -|
-    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+-------------+-------------+-----+
+    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+    |                            Modules                           |  Issue |       | Latency |  Latency  | Iteration|         | Trip |          |           |         |            |             |     |
+    |                            & Loops                           |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count| Pipelined|   BRAM    |   DSP   |     FF     |     LUT     | URAM|
+    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+    |+ preprocess                                                  |  Timing|  -0.00|      301|  3.010e+03|         -|      302|     -|        no|  813 (91%)|  15 (1%)|  36160 (8%)|  63868 (31%)|    -|
+    | + grp_dataflow_fu_662*                                       |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  597 (67%)|  15 (1%)|  23787 (5%)|  38522 (18%)|    -|
+    |  + add_ln327_loc_channel_dataflow_Block_split1_proc_fu_812   |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln336_loc_channel_dataflow_Block_split13_proc_fu_818  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln345_loc_channel_dataflow_Block_split15_proc_fu_824  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln354_loc_channel_dataflow_Block_split17_proc_fu_830  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln363_loc_channel_dataflow_Block_split19_proc_fu_836  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + grp_dataflow_alpha7_fu_842*                               |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2436 (~0%)|    5448 (2%)|    -|
+    |   + grp_read_samples12_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples12_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract13_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate14_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate14_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate14_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress15_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha8_fu_877*                               |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples16_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples16_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract17_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate18_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate18_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate18_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress19_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha9_fu_912*                               |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples20_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples20_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract21_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate22_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate22_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate22_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress23_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha10_fu_947*                              |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples24_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples24_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract25_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate26_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate26_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate26_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress27_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha11_fu_982*                              |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples28_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples28_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract29_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate30_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate30_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate30_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress31_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_merge_integrals_fu_1017                               |       -|   1.29|       22|    220.000|         -|       22|     -|        no|          -|        -|    16 (~0%)|   1266 (~0%)|    -|
+    |   o VITIS_LOOP_124_1_VITIS_LOOP_125_2                        |       -|   7.30|       20|    200.000|         2|        1|    20|       yes|          -|        -|           -|            -|    -|
+    |  + grp_island_detection_fu_1103                              |  Timing|  -0.00|      105|  1.050e+03|         -|      105|     -|        no|          -|        -|   158 (~0%)|   1289 (~0%)|    -|
+    |   + grp_island_detection_Pipeline_island_alphas_fu_67        |  Timing|  -0.00|       23|    230.000|         -|       23|     -|        no|          -|        -|   127 (~0%)|   1182 (~0%)|    -|
+    |    o island_alphas                                           |      II|   7.30|       21|    210.000|         6|        4|     5|       yes|          -|        -|           -|            -|    -|
+    |   o island_integrals                                         |       -|   7.30|      104|  1.040e+03|        26|        -|     4|        no|          -|        -|           -|            -|    -|
+    |  + grp_centroiding_fu_1112                                   |       -|   0.49|      137|  1.370e+03|         -|      137|     -|        no|          -|  15 (1%)|   850 (~0%)|   1182 (~0%)|    -|
+    |   + grp_centroiding_Pipeline_centroiding_alphas_fu_92        |       -|   0.49|       12|    120.000|         -|       12|     -|        no|          -|  15 (1%)|   551 (~0%)|    802 (~0%)|    -|
+    |    o centroiding_alphas                                      |       -|   7.30|       10|    100.000|         7|        1|     5|       yes|          -|        -|           -|            -|    -|
+    |   o centroiding_integrals                                    |       -|   7.30|      136|  1.360e+03|        34|        -|     4|        no|          -|        -|           -|            -|    -|
+    |  + call_ret_entry_proc_fu_1122                               |       -|   7.30|        0|      0.000|         -|        0|     -|        no|          -|        -|   130 (~0%)|     29 (~0%)|    -|
+    |  + grp_write_integrals_fu_1130                               |  Timing|  -0.00|       28|    280.000|         -|       28|     -|        no|          -|        -|   596 (~0%)|    245 (~0%)|    -|
+    |   o write_integrals_integrals_write_integrals_alphas         |       -|   7.30|       26|    260.000|         8|        1|    20|       yes|          -|        -|           -|            -|    -|
+    |  + grp_write_centroid_fu_1139                                |  Timing|  -0.00|        8|     80.000|         -|        8|     -|        no|          -|        -|   239 (~0%)|    493 (~0%)|    -|
+    | o loop_alphas                                                |       -|   7.30|        5|     50.000|         1|        1|     5|       yes|          -|        -|           -|            -|    -|
+    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
 
 
 ================================================================
@@ -243,7 +243,7 @@
 +--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | HW Interface | Loop              | Message                                                                                                                                                                                                                        | Location                  |
 +--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| m_axi_aximm7 |                   | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:227:15 |
+| m_axi_aximm7 |                   | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:224:15 |
 | m_axi_aximm1 | read_samples_loop | Multiple burst reads of length 256 and bit width 256. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:29:24  |
 +--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 
@@ -251,26 +251,26 @@
 +--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
 | HW Interface | Variable           | Loop        | Problem                                  | Resolution | Location                  |
 +--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:431:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
 +--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
 
     * Resolution URL: www.xilinx.com/cgi-bin/docs/rdoc?v=2021.1;t=hls+guidance;d=XXX-YYY.html (replace XXX-YYY with column value)
