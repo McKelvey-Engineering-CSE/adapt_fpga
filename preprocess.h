@@ -15,10 +15,14 @@ typedef hls::vector<uint32_t, 16> vec_uint32_16;
 
 extern "C" {
     void preprocess(
-	        const struct SW_Data_Packet input_data_packet[NUM_ALPHAS], // Read-Only Data Packet Struct
-	        const vec_uint16_16 *input_all_peds, // Read-Only Pedestals
+	        const struct SW_Data_Packet * input_data_packet0, // Read-Only Data Packet Struct
+	        const struct SW_Data_Packet * input_data_packet1, // Read-Only Data Packet Struct
+	        const struct SW_Data_Packet * input_data_packet2, // Read-Only Data Packet Struct
+	        const struct SW_Data_Packet * input_data_packet3, // Read-Only Data Packet Struct
+	        const struct SW_Data_Packet * input_data_packet4, // Read-Only Data Packet Struct
+	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
             const int16_t bounds[2*NUM_INTEGRALS], // Read-Only Integral Bounds
-            const int32_t *zero_thresholds, // Read-Only Thresholds for zero-suppression
+            const int32_t zero_thresholds[NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        int32_t *output_integrals,       // Output Result (Integrals)
             struct Centroid *centroid // Output Centroid
 	);

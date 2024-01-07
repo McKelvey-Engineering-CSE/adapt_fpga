@@ -196,7 +196,7 @@ int main()
 {
         printf("Beginning of main\n");
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
-    vec_uint16_16 input_all_peds[NUM_ALPHAS*2*NUM_SAMPLES];
+    vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
     int16_t bounds[2*NUM_INTEGRALS];
     int32_t output_integrals[NUM_ALPHAS*NUM_INTEGRALS*NUM_CHANNELS];
     Centroid centroid;
@@ -204,9 +204,8 @@ int main()
     // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
         printf("Initializing inputs for alpha %u\n", alpha);
-        unsigned ped_offset = alpha * 2 * NUM_SAMPLES;
         initialize_inputs(input_data_packet + alpha,
-                         input_all_peds + ped_offset);
+                         input_all_peds[alpha]);
     }
 
     const char * bounds_strings[8] = {"-5", "5", "-10", "10", "-15", "15", "-20", "20"};
@@ -221,10 +220,14 @@ int main()
 
     int32_t zero_thresholds[NUM_INTEGRALS] = {-1000, -1000, -1000, 5};
 
-    preprocess( input_data_packet,
-                (vec_uint16_16 *) input_all_peds,
+    preprocess( &input_data_packet[0],
+                &input_data_packet[1],
+                &input_data_packet[2],
+                &input_data_packet[3],
+                &input_data_packet[4],
+                input_all_peds,
                 bounds,
-                (int32_t *) zero_thresholds,
+                zero_thresholds,
                 (int32_t *) output_integrals,
                 (struct Centroid *) &centroid
                 );
