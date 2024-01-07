@@ -130,7 +130,7 @@ extern "C" {
 
         }
 
-        centroiding(centroid, output_integrals, 3);
+        centroid->count = centroiding(centroid, output_integrals, 3);
 
     }
 }
