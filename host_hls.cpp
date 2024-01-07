@@ -246,6 +246,7 @@ int main()
 
     write_header(output_fd, "centroid_position", centroid.position);
     write_header(output_fd, "centroid_signal", centroid.signal);
+    write_header(output_fd, "centroid_count", centroid.count);
 
     return 0;
 }

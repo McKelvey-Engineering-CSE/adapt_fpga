@@ -80,3 +80,4 @@ state_machine_status: 0
 3 (-20,20)    0 0 27 10 0 0 0 0 26 0 0 0 0 0 24 8
 centroid_position: 39
 centroid_signal: 475
+centroid_count: 15

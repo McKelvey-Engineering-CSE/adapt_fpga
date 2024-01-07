@@ -110,6 +110,7 @@ int16_t centroiding(Centroid * centroid, const uint8_t integral_num) {
     }
     centroid->position = (count > 0) ? position / signal : 0;
     centroid->signal = (count > 0) ? signal : 0;
+    centroid->count = count;
     return count;
 }
 
