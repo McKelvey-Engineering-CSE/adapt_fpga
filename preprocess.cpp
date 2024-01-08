@@ -285,7 +285,7 @@ void sequential_alphas(const SW_Data_Packet * input_data_packet0,
         const int16_t base_addrs[NUM_ALPHAS]) {
 
     loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-        // #pragma HLS UNROLL factor=1
+        #pragma HLS UNROLL factor=1
 
         const SW_Data_Packet * input_data_packet;
 
@@ -346,7 +346,7 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
     #pragma HLS STREAM variable=stream_num_islands depth=1
     #pragma HLS STREAM variable=stream_centroid depth=1
 
-	// #pragma HLS DATAFLOW
+	#pragma HLS DATAFLOW
 
     // #pragma HLS array_partition variable=input_all_peds type=complete dim=1
     // #pragma HLS array_partition variable=banks type=complete dim=1
