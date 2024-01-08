@@ -122,12 +122,12 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
 //     }
 // }
 
-void merge_integrals(hls::stream<vec_int32_16> & zeroed_integrals,
+void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
                      hls::stream<vec_int32_16> & merged_integrals) {
     vec_int32_16 current;
     for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
     for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-            current = zeroed_integrals.read();
+            current = zeroed_integrals[alpha].read();
             merged_integrals << current;
 
         }
@@ -248,7 +248,7 @@ void dataflow_alpha(const vec_uint16_16 * samples,
 	#pragma HLS STREAM variable=ped_sub_results depth=256
 	#pragma HLS STREAM variable=integrals depth=4
 
-	// #pragma HLS DATAFLOW
+	#pragma HLS DATAFLOW
 
 	read_samples(samples,
                  packet_samples);
@@ -279,29 +279,30 @@ void sequential_alphas(const SW_Data_Packet * input_data_packet0,
         const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
         const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-        hls::stream<vec_int32_16> & zeroed_integrals,
+        hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
 		const uint8_t banks[NUM_ALPHAS],
         const uint8_t starting_sample_numbers[NUM_ALPHAS],
         const int16_t base_addrs[NUM_ALPHAS]) {
 
-    loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+    sequential_loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
         #pragma HLS UNROLL factor=1
 
         const SW_Data_Packet * input_data_packet;
+        hls::stream<vec_int32_16> * zeroed_integrals_ptr;
 
         switch (alpha) {
-            case 0: input_data_packet = input_data_packet0; break;
-            case 1: input_data_packet = input_data_packet1; break;
-            case 2: input_data_packet = input_data_packet2; break;
-            case 3: input_data_packet = input_data_packet3; break;
-            case 4: input_data_packet = input_data_packet4; break;
+            case 0: input_data_packet = input_data_packet0; zeroed_integrals_ptr = &zeroed_integrals[0]; break;
+            case 1: input_data_packet = input_data_packet1; zeroed_integrals_ptr = &zeroed_integrals[1]; break;
+            case 2: input_data_packet = input_data_packet2; zeroed_integrals_ptr = &zeroed_integrals[2]; break;
+            case 3: input_data_packet = input_data_packet3; zeroed_integrals_ptr = &zeroed_integrals[3]; break;
+            case 4: input_data_packet = input_data_packet4; zeroed_integrals_ptr = &zeroed_integrals[4]; break;
         }
 
         dataflow_alpha(input_data_packet->samples,
                     input_all_peds,
                     bounds,
                     zero_thresholds,
-                    zeroed_integrals,
+                    *zeroed_integrals_ptr,
                     banks,
                     starting_sample_numbers,
                     base_addrs,
@@ -328,18 +329,18 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
         ) {
 
 
-    hls::stream<vec_int32_16> zeroed_integrals;
+    hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS];
     static hls::stream<vec_int32_16> merged_integrals;
     static hls::stream<vec_int32_16> island_output;
     static hls::stream<vec_int32_16> centroiding_output;
     hls::stream<int16_t> stream_num_islands;
     hls::stream<Centroid> stream_centroid;
-    // #pragma HLS STREAM variable=zeroed_integrals[0] depth=4
-    // #pragma HLS STREAM variable=zeroed_integrals[1] depth=4
-    // #pragma HLS STREAM variable=zeroed_integrals[2] depth=4
-    // #pragma HLS STREAM variable=zeroed_integrals[3] depth=4
-    // #pragma HLS STREAM variable=zeroed_integrals[4] depth=4
-    #pragma HLS STREAM variable=zeroed_integrals depth=4
+    #pragma HLS STREAM variable=zeroed_integrals[0] depth=4
+    #pragma HLS STREAM variable=zeroed_integrals[1] depth=4
+    #pragma HLS STREAM variable=zeroed_integrals[2] depth=4
+    #pragma HLS STREAM variable=zeroed_integrals[3] depth=4
+    #pragma HLS STREAM variable=zeroed_integrals[4] depth=4
+    // #pragma HLS STREAM variable=zeroed_integrals depth=4
     #pragma HLS STREAM variable=merged_integrals depth=20
     #pragma HLS STREAM variable=island_output depth=20
     #pragma HLS STREAM variable=centroiding_output depth=20
@@ -423,7 +424,7 @@ extern "C" {
         uint8_t starting_sample_numbers[NUM_ALPHAS];
         int16_t base_addrs[NUM_ALPHAS];
 
-        loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+        top_loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
             const SW_Data_Packet * input_data_packet;
 
             switch (alpha) {
