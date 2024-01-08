@@ -11,9 +11,6 @@
 #include "preprocess.h"
 
 
-vec_int32_16 zeroed_integrals_global[NUM_ALPHAS][NUM_INTEGRALS];
-Centroid local_centroid;
-
 void read_params(const SW_Data_Packet* data_packet,
                  uint8_t &bank,
                  uint8_t &starting_sample_number,
@@ -111,15 +108,6 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
         zeroed_integrals << zeroed_integral;
     }
 }
-
-// void copy_outputs(hls::stream<vec_int32_16> & zeroed_integrals, const uint8_t alpha) {
-//     vec_int32_16 integral;
-
-//     copy_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-//         integral = zeroed_integrals.read();
-//         // zeroed_integrals_global[alpha][i] = integral;
-//     }
-// }
 
 void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
                      hls::stream<vec_int32_16> & merged_integrals) {
@@ -267,7 +255,6 @@ void dataflow_alpha(const vec_uint16_16 * samples,
                   zero_thresholds[alpha],
                   zeroed_integrals[alpha]);
 
-    // copy_outputs(zeroed_integrals[alpha], alpha);
 }
 
 
@@ -299,24 +286,6 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
     #pragma HLS STREAM variable=centroiding_output depth=20
     #pragma HLS STREAM variable=stream_num_islands depth=1
     #pragma HLS STREAM variable=stream_centroid depth=1
-
-    // static hls::stream<vec_int32_16> zeroed_integrals_0;
-	// #pragma HLS STREAM variable=zeroed_integrals_0 depth=4
-    // static hls::stream<vec_int32_16> zeroed_integrals_1;
-	// #pragma HLS STREAM variable=zeroed_integrals_1 depth=4
-    // static hls::stream<vec_int32_16> zeroed_integrals_2;
-	// #pragma HLS STREAM variable=zeroed_integrals_2 depth=4
-    // static hls::stream<vec_int32_16> zeroed_integrals_3;
-	// #pragma HLS STREAM variable=zeroed_integrals_3 depth=4
-    // static hls::stream<vec_int32_16> zeroed_integrals_4;
-	// #pragma HLS STREAM variable=zeroed_integrals_4 depth=4
-    
-    // static hls::stream<vec_int32_16> * zeroed_integrals[NUM_ALPHAS] = 
-    // {
-    //     &zeroed_integrals_0, &zeroed_integrals_1,
-    //     &zeroed_integrals_2, &zeroed_integrals_3,
-    //     &zeroed_integrals_4
-    // };
 
 	#pragma HLS DATAFLOW
 
@@ -380,17 +349,6 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
     centroiding(island_output,stream_num_islands,centroiding_output,stream_centroid);
     write_integrals(centroiding_output, output_integrals);
     write_centroid(stream_centroid, centroid);
-
-    // for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-    //     // output_integrals[alpha * NUM_INTEGRALS * NUM_CHANNELS +
-    //     //                 i * NUM_CHANNELS + c] = current[c];
-    // }
-
-    // island_detection(3, zeroed_integrals[]) {
-    //     bool in_island = 0;
-    //     int16_t num_islands = 0;
-
-    // }
     
 
 
@@ -459,11 +417,6 @@ extern "C" {
                  starting_sample_numbers,
                  base_addrs);
 
-
-
-        // centroiding(&local_centroid, 3);
-
-        // write_outputs(centroid, output_integrals);
 
     }
 }
