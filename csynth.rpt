@@ -4,7 +4,7 @@
 == Synthesis Summary Report of 'preprocess'
 ================================================================
 + General Information: 
-    * Date:           Sun Jan  7 16:14:06 2024
+    * Date:           Sun Jan  7 20:11:03 2024
     * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
     * Project:        sw_emu_project
     * Solution:       solution1 (Vivado IP Flow Target)
@@ -21,11 +21,11 @@
     +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
     |+ preprocess                                                  |  Timing|  -0.00|      301|  3.010e+03|         -|      302|     -|        no|  813 (91%)|  15 (1%)|  36160 (8%)|  63868 (31%)|    -|
     | + grp_dataflow_fu_662*                                       |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  597 (67%)|  15 (1%)|  23787 (5%)|  38522 (18%)|    -|
-    |  + add_ln327_loc_channel_dataflow_Block_split1_proc_fu_812   |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln336_loc_channel_dataflow_Block_split13_proc_fu_818  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln345_loc_channel_dataflow_Block_split15_proc_fu_824  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln354_loc_channel_dataflow_Block_split17_proc_fu_830  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
-    |  + add_ln363_loc_channel_dataflow_Block_split19_proc_fu_836  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln296_loc_channel_dataflow_Block_split1_proc_fu_812   |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln305_loc_channel_dataflow_Block_split13_proc_fu_818  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln314_loc_channel_dataflow_Block_split15_proc_fu_824  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln323_loc_channel_dataflow_Block_split17_proc_fu_830  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln332_loc_channel_dataflow_Block_split19_proc_fu_836  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
     |  + grp_dataflow_alpha7_fu_842*                               |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2436 (~0%)|    5448 (2%)|    -|
     |   + grp_read_samples12_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
     |    + grp_read_samples12_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
@@ -92,7 +92,7 @@
     |   + grp_zero_suppress31_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
     |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
     |  + grp_merge_integrals_fu_1017                               |       -|   1.29|       22|    220.000|         -|       22|     -|        no|          -|        -|    16 (~0%)|   1266 (~0%)|    -|
-    |   o VITIS_LOOP_124_1_VITIS_LOOP_125_2                        |       -|   7.30|       20|    200.000|         2|        1|    20|       yes|          -|        -|           -|            -|    -|
+    |   o VITIS_LOOP_112_1_VITIS_LOOP_113_2                        |       -|   7.30|       20|    200.000|         2|        1|    20|       yes|          -|        -|           -|            -|    -|
     |  + grp_island_detection_fu_1103                              |  Timing|  -0.00|      105|  1.050e+03|         -|      105|     -|        no|          -|        -|   158 (~0%)|   1289 (~0%)|    -|
     |   + grp_island_detection_Pipeline_island_alphas_fu_67        |  Timing|  -0.00|       23|    230.000|         -|       23|     -|        no|          -|        -|   127 (~0%)|   1182 (~0%)|    -|
     |    o island_alphas                                           |      II|   7.30|       21|    210.000|         6|        4|     5|       yes|          -|        -|           -|            -|    -|
@@ -243,34 +243,34 @@
 +--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | HW Interface | Loop              | Message                                                                                                                                                                                                                        | Location                  |
 +--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| m_axi_aximm7 |                   | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:224:15 |
-| m_axi_aximm1 | read_samples_loop | Multiple burst reads of length 256 and bit width 256. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:29:24  |
+| m_axi_aximm7 |                   | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:212:15 |
+| m_axi_aximm1 | read_samples_loop | Multiple burst reads of length 256 and bit width 256. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:26:24  |
 +--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 
 * Bursts and Widening Missed
 +--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
 | HW Interface | Variable           | Loop        | Problem                                  | Resolution | Location                  |
 +--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:428:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
 +--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
 
     * Resolution URL: www.xilinx.com/cgi-bin/docs/rdoc?v=2021.1;t=hls+guidance;d=XXX-YYY.html (replace XXX-YYY with column value)
