@@ -284,8 +284,8 @@ void sequential_alphas(const SW_Data_Packet * input_data_packet0,
         const uint8_t starting_sample_numbers[NUM_ALPHAS],
         const int16_t base_addrs[NUM_ALPHAS]) {
 
-    sequential_loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-        #pragma HLS UNROLL factor=1
+    loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+        // #pragma HLS UNROLL factor=1
 
         const SW_Data_Packet * input_data_packet;
         hls::stream<vec_int32_16> * zeroed_integrals_ptr;
@@ -308,7 +308,7 @@ void sequential_alphas(const SW_Data_Packet * input_data_packet0,
                     base_addrs,
                     alpha);
 
-        ap_wait();
+        // ap_wait();
     }
 }
 
