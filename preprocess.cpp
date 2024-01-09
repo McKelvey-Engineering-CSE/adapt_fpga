@@ -285,7 +285,7 @@ void sequential_alphas(const SW_Data_Packet * input_data_packet0,
         const int16_t base_addrs[NUM_ALPHAS]) {
 
     loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-        #pragma HLS UNROLL factor=1
+        // #pragma HLS UNROLL factor=1
 
         const SW_Data_Packet * input_data_packet;
 
@@ -307,7 +307,7 @@ void sequential_alphas(const SW_Data_Packet * input_data_packet0,
                     base_addrs,
                     alpha);
 
-        ap_wait();
+        // ap_wait();
     }
 }
 
