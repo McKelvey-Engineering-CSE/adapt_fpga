@@ -4,7 +4,7 @@
 == Synthesis Summary Report of 'preprocess'
 ================================================================
 + General Information: 
-    * Date:           Mon Jan  8 18:35:29 2024
+    * Date:           Mon Jan  8 19:08:42 2024
     * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
     * Project:        sw_emu_project
     * Solution:       solution1 (Vivado IP Flow Target)
@@ -15,42 +15,37 @@
 + Performance & Resource Estimates: 
     
     PS: '+' for module; 'o' for loop; '*' for dataflow
-    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
-    |                            Modules                           |  Issue |       | Latency |  Latency  | Iteration|         | Trip |          |           |         |            |             |     |
-    |                            & Loops                           |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count| Pipelined|   BRAM    |   DSP   |     FF     |     LUT     | URAM|
-    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
-    |+ preprocess                                                  |  Timing|  -0.00|     5070|  5.070e+04|         -|     5071|     -|        no|  405 (45%)|  15 (1%)|  24192 (5%)|  50642 (24%)|    -|
-    | + grp_dataflow_fu_546*                                       |  Timing|  -0.00|     5051|  5.051e+04|         -|     5052|     -|  dataflow|  189 (21%)|  15 (1%)|  10654 (2%)|  25343 (12%)|    -|
-    |  + grp_sequential_alphas_fu_174                              |  Timing|  -0.00|     5051|  5.051e+04|         -|     5051|     -|        no|    73 (8%)|        -|   7657 (1%)|  21404 (10%)|    -|
-    |   + grp_sequential_alphas_Pipeline_read_samples_loop_fu_205  |  Timing|  -0.00|      266|  2.660e+03|         -|      266|     -|        no|          -|        -|  1668 (~0%)|    711 (~0%)|    -|
-    |    o read_samples_loop                                       |       -|   7.30|      264|  2.640e+03|        10|        1|   256|       yes|          -|        -|           -|            -|    -|
-    |   + grp_ped_subtract_fu_226                                  |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    505 (~0%)|    -|
-    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
-    |   + grp_integrate_fu_239                                     |       -|   2.16|      273|  2.730e+03|         -|      273|     -|        no|          -|        -|  3246 (~0%)|    8262 (4%)|    -|
-    |    + grp_integrate_Pipeline_int_samples_fu_1123              |       -|   2.19|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|  2073 (~0%)|    6910 (3%)|    -|
-    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
-    |    + grp_integrate_Pipeline_VITIS_LOOP_92_1_fu_1204          |       -|   3.61|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|     69 (~0%)|    -|
-    |     o VITIS_LOOP_92_1                                        |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
-    |   + grp_zero_suppress_fu_249                                 |       -|   1.43|      205|  2.050e+03|         -|      205|     -|        no|          -|        -|  2214 (~0%)|   11427 (5%)|    -|
-    |    o zero_integrals                                          |       -|   7.30|      204|  2.040e+03|        51|        -|     4|        no|          -|        -|           -|            -|    -|
-    |     o zero_channels                                          |       -|   7.30|       48|    480.000|         3|        -|    16|        no|          -|        -|           -|            -|    -|
-    |   o loop_alphas                                              |       -|   7.30|     5050|  5.050e+04|      1010|        -|     5|        no|          -|        -|           -|            -|    -|
-    |  + grp_merge_integrals_fu_211                                |       -|   2.10|       22|    220.000|         -|       22|     -|        no|          -|        -|     9 (~0%)|     93 (~0%)|    -|
-    |   o VITIS_LOOP_128_1_VITIS_LOOP_129_2                        |       -|   7.30|       20|    200.000|         2|        1|    20|       yes|          -|        -|           -|            -|    -|
-    |  + grp_island_detection_fu_218                               |  Timing|  -0.00|      105|  1.050e+03|         -|      105|     -|        no|          -|        -|   158 (~0%)|   1289 (~0%)|    -|
-    |   + grp_island_detection_Pipeline_island_alphas_fu_67        |  Timing|  -0.00|       23|    230.000|         -|       23|     -|        no|          -|        -|   127 (~0%)|   1182 (~0%)|    -|
-    |    o island_alphas                                           |      II|   7.30|       21|    210.000|         6|        4|     5|       yes|          -|        -|           -|            -|    -|
-    |   o island_integrals                                         |       -|   7.30|      104|  1.040e+03|        26|        -|     4|        no|          -|        -|           -|            -|    -|
-    |  + grp_centroiding_fu_227                                    |       -|   0.49|      137|  1.370e+03|         -|      137|     -|        no|          -|  15 (1%)|   850 (~0%)|   1182 (~0%)|    -|
-    |   + grp_centroiding_Pipeline_centroiding_alphas_fu_92        |       -|   0.49|       12|    120.000|         -|       12|     -|        no|          -|  15 (1%)|   551 (~0%)|    802 (~0%)|    -|
-    |    o centroiding_alphas                                      |       -|   7.30|       10|    100.000|         7|        1|     5|       yes|          -|        -|           -|            -|    -|
-    |   o centroiding_integrals                                    |       -|   7.30|      136|  1.360e+03|        34|        -|     4|        no|          -|        -|           -|            -|    -|
-    |  + call_ret_entry_proc_fu_237                                |       -|   7.30|        0|      0.000|         -|        0|     -|        no|          -|        -|   130 (~0%)|     29 (~0%)|    -|
-    |  + grp_write_integrals_fu_245                                |  Timing|  -0.00|       28|    280.000|         -|       28|     -|        no|          -|        -|   596 (~0%)|    245 (~0%)|    -|
-    |   o write_integrals_integrals_write_integrals_alphas         |       -|   7.30|       26|    260.000|         8|        1|    20|       yes|          -|        -|           -|            -|    -|
-    |  + grp_write_centroid_fu_254                                 |  Timing|  -0.00|        8|     80.000|         -|        8|     -|        no|          -|        -|   239 (~0%)|    493 (~0%)|    -|
-    | o loop_alphas                                                |       -|   7.30|        5|     50.000|         1|        1|     5|       yes|          -|        -|           -|            -|    -|
-    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+    +------------------------------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+    |                                          Modules                                         |  Issue |       | Latency |  Latency  | Iteration|         | Trip |          |           |         |            |             |     |
+    |                                          & Loops                                         |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count| Pipelined|   BRAM    |   DSP   |     FF     |     LUT     | URAM|
+    +------------------------------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+    |+ preprocess                                                                              |  Timing|  -0.00|     5070|  5.070e+04|         -|     5071|     -|        no|  376 (42%)|  15 (1%)|  25256 (6%)|  50949 (24%)|    -|
+    | + grp_dataflow_fu_544*                                                                   |  Timing|  -0.00|     5051|  5.051e+04|         -|     5052|     -|  dataflow|  160 (17%)|  15 (1%)|  11718 (2%)|  25650 (12%)|    -|
+    |  + grp_sequential_alphas_fu_166                                                          |  Timing|  -0.00|     5051|  5.051e+04|         -|     5051|     -|        no|    73 (8%)|        -|   7657 (1%)|  21404 (10%)|    -|
+    |   + grp_sequential_alphas_Pipeline_read_samples_loop_fu_205                              |  Timing|  -0.00|      266|  2.660e+03|         -|      266|     -|        no|          -|        -|  1668 (~0%)|    711 (~0%)|    -|
+    |    o read_samples_loop                                                                   |       -|   7.30|      264|  2.640e+03|        10|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract_fu_226                                                              |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    505 (~0%)|    -|
+    |    o ped_samples                                                                         |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate_fu_239                                                                 |       -|   2.16|      273|  2.730e+03|         -|      273|     -|        no|          -|        -|  3246 (~0%)|    8262 (4%)|    -|
+    |    + grp_integrate_Pipeline_int_samples_fu_1123                                          |       -|   2.19|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|  2073 (~0%)|    6910 (3%)|    -|
+    |     o int_samples                                                                        |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate_Pipeline_VITIS_LOOP_90_1_fu_1204                                      |       -|   3.61|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|     69 (~0%)|    -|
+    |     o VITIS_LOOP_90_1                                                                    |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress_fu_249                                                             |       -|   1.43|      205|  2.050e+03|         -|      205|     -|        no|          -|        -|  2214 (~0%)|   11427 (5%)|    -|
+    |    o zero_integrals                                                                      |       -|   7.30|      204|  2.040e+03|        51|        -|     4|        no|          -|        -|           -|            -|    -|
+    |     o zero_channels                                                                      |       -|   7.30|       48|    480.000|         3|        -|    16|        no|          -|        -|           -|            -|    -|
+    |   o loop_alphas                                                                          |       -|   7.30|     5050|  5.050e+04|      1010|        -|     5|        no|          -|        -|           -|            -|    -|
+    |  + grp_island_detection_fu_203                                                           |  Timing|  -0.00|       83|    830.000|         -|       83|     -|        no|          -|        -|   118 (~0%)|   1273 (~0%)|    -|
+    |   o island_alphas_island_integrals                                                       |      II|   7.30|       81|    810.000|         6|        4|    20|       yes|          -|        -|           -|            -|    -|
+    |  + grp_centroiding_fu_211                                                                |       -|   0.37|       47|    470.000|         -|       47|     -|        no|          -|  15 (1%)|  2115 (~0%)|   1601 (~0%)|    -|
+    |   o centroiding_alphas_centroiding_integrals                                             |       -|   7.30|       45|    450.000|        27|        1|    20|       yes|          -|        -|           -|            -|    -|
+    |  + call_ret_entry_proc_fu_221                                                            |       -|   7.30|        0|      0.000|         -|        0|     -|        no|          -|        -|   130 (~0%)|     29 (~0%)|    -|
+    |  + grp_write_integrals_fu_229                                                            |  Timing|  -0.00|       30|    300.000|         -|       30|     -|        no|          -|        -|   591 (~0%)|    301 (~0%)|    -|
+    |   + grp_write_integrals_Pipeline_write_integrals_alphas_write_integrals_integrals_fu_56  |  Timing|  -0.00|       23|    230.000|         -|       23|     -|        no|          -|        -|   523 (~0%)|     84 (~0%)|    -|
+    |    o write_integrals_alphas_write_integrals_integrals                                    |       -|   7.30|       21|    210.000|         3|        1|    20|       yes|          -|        -|           -|            -|    -|
+    |  + grp_write_centroid_fu_238                                                             |  Timing|  -0.00|        8|     80.000|         -|        8|     -|        no|          -|        -|   239 (~0%)|    493 (~0%)|    -|
+    | o top_loop_alphas                                                                        |       -|   7.30|        5|     50.000|         1|        1|     5|       yes|          -|        -|           -|            -|    -|
+    +------------------------------------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
 
 
 ================================================================
@@ -152,37 +147,38 @@
 == M_AXI Burst Information
 ================================================================
 * Burst Summary
-+--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| HW Interface | Message                                                                                                                                                                                                                        | Location                  |
-+--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| m_axi_aximm7 | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:228:15 |
-+--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
++--------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
+| HW Interface | Loop                   | Message                                                                                                                                                                                                                        | Location                  |
++--------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
+| m_axi_aximm6 | write_integrals_alphas | Multiple burst writes of length 20 and bit width 512. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:192:29 |
+| m_axi_aximm7 |                        | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:204:15 |
++--------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 
 * Bursts and Widening Missed
-+--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
-| HW Interface | Variable           | Loop        | Problem                                  | Resolution | Location                  |
-+--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:426:22 |
-+--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
++--------------+--------------------+-----------------+------------------------------------------+------------+---------------------------+
+| HW Interface | Variable           | Loop            | Problem                                  | Resolution | Location                  |
++--------------+--------------------+-----------------+------------------------------------------+------------+---------------------------+
+| m_axi_aximm1 | input_data_packet0 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm2 | input_data_packet1 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm3 | input_data_packet2 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm4 | input_data_packet3 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm5 | input_data_packet4 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm1 | input_data_packet0 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm2 | input_data_packet1 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm3 | input_data_packet2 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm4 | input_data_packet3 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm5 | input_data_packet4 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm1 | input_data_packet0 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm2 | input_data_packet1 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm3 | input_data_packet2 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm4 | input_data_packet3 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm5 | input_data_packet4 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm1 | input_data_packet0 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm2 | input_data_packet1 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm3 | input_data_packet2 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm4 | input_data_packet3 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
+| m_axi_aximm5 | input_data_packet4 | top_loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:379:26 |
++--------------+--------------------+-----------------+------------------------------------------+------------+---------------------------+
 
     * Resolution URL: www.xilinx.com/cgi-bin/docs/rdoc?v=2021.1;t=hls+guidance;d=XXX-YYY.html (replace XXX-YYY with column value)
 
