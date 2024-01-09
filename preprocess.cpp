@@ -125,8 +125,9 @@ void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
 void island_detection(hls::stream<vec_int32_16> & merged_integrals,
                          hls::stream<vec_int32_16> & island_output,
                          hls::stream<int16_t> & stream_num_islands) {
-    bool in_island_tmp;
     int16_t num_islands_tmp;
+    int32_t prev;
+    int32_t curr;
     vec_int32_16 integral;
     island_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
         island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
@@ -135,16 +136,10 @@ void island_detection(hls::stream<vec_int32_16> & merged_integrals,
             if (i == INTEGRAL_NUM) {
 
                 island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-                    bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
                     int16_t num_islands = (a == 0 && c == 0) ? 0 : num_islands_tmp;
-                    if(integral[c] && !in_island) {
-                        in_island = true;
-                        ++num_islands;
-                    }
-                    else if (!integral[c] && in_island) {
-                        in_island = false;
-                    }
-                    in_island_tmp = in_island;
+                    prev = (a == 0 && c == 0) ? 0 : curr;
+                    curr = integral[c];
+                    num_islands = (!prev && curr) ? num_islands+1 : num_islands;
                     num_islands_tmp = num_islands;
                 }
             }
