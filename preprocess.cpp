@@ -224,7 +224,7 @@ void dataflow_alpha(const vec_uint16_16 * samples,
 	#pragma HLS STREAM variable=ped_sub_results depth=256
 	#pragma HLS STREAM variable=integrals depth=4
 
-	// #pragma HLS DATAFLOW
+	#pragma HLS DATAFLOW
 
 	read_samples(samples,
                  packet_samples);
@@ -321,6 +321,7 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
     // #pragma HLS array_partition variable=base_addrs type=complete dim=1
     // #pragma HLS array_partition variable=bounds type=complete dim=1
     // #pragma HLS array_partition variable=zero_thresholds type=complete dim=1
+
 
     sequential_alphas(input_data_packet0,
                  input_data_packet1,
