@@ -215,47 +215,6 @@ void write_centroid(hls::stream<Centroid> & stream_centroid,
     *centroid = local_centroid;
 }
 
-void dataflow_alpha(const vec_uint16_16 * samples,
-        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
-        const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
-        const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-        hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
-		const uint8_t banks[NUM_ALPHAS],
-        const uint8_t starting_sample_numbers[NUM_ALPHAS],
-        const int16_t base_addrs[NUM_ALPHAS],
-        const uint8_t alpha
-        ) {
-
-    #pragma HLS FUNCTION_INSTANTIATE variable=alpha
-
-	hls::stream<vec_uint16_16> packet_samples;
-	hls::stream<vec_int32_16> ped_sub_results;
-	hls::stream<vec_int32_16> integrals;
-	#pragma HLS STREAM variable=packet_samples depth=256
-	#pragma HLS STREAM variable=ped_sub_results depth=256
-	#pragma HLS STREAM variable=integrals depth=4
-
-	#pragma HLS DATAFLOW
-
-	read_samples(samples,
-                 packet_samples);
-
-	ped_subtract(banks[alpha],
-                 starting_sample_numbers[alpha],
-                 packet_samples,
-                 input_all_peds[alpha],
-                 ped_sub_results);
-
-	integrate(base_addrs[alpha],
-              ped_sub_results,
-              bounds[alpha],
-              integrals);
-
-    zero_suppress(integrals,
-                  zero_thresholds[alpha],
-                  zeroed_integrals[alpha]);
-
-}
 
 
 void dataflow(const SW_Data_Packet * input_data_packet0,
@@ -296,51 +255,35 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
     #pragma HLS array_partition variable=bounds type=complete dim=1
     #pragma HLS array_partition variable=zero_thresholds type=complete dim=1
 
-    dataflow_alpha(input_data_packet0->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                0);
-    dataflow_alpha(input_data_packet1->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                1);
-    dataflow_alpha(input_data_packet2->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                2);
-    dataflow_alpha(input_data_packet3->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                3);
-    dataflow_alpha(input_data_packet4->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                4);
+
+	hls::stream<vec_uint16_16> packet_samples;
+	hls::stream<vec_int32_16> ped_sub_results;
+	hls::stream<vec_int32_16> integrals;
+	#pragma HLS STREAM variable=packet_samples depth=256
+	#pragma HLS STREAM variable=ped_sub_results depth=256
+	#pragma HLS STREAM variable=integrals depth=4
+
+	#pragma HLS DATAFLOW
+
+	constexpr int alpha = 0;
+
+	read_samples(input_data_packet0->samples,
+                 packet_samples);
+
+	ped_subtract(banks[alpha],
+                 starting_sample_numbers[alpha],
+                 packet_samples,
+                 input_all_peds[alpha],
+                 ped_sub_results);
+
+	integrate(base_addrs[alpha],
+              ped_sub_results,
+              bounds[alpha],
+              integrals);
+
+    zero_suppress(integrals,
+                  zero_thresholds[alpha],
+                  zeroed_integrals[alpha]);
 
     merge_integrals(zeroed_integrals,
                     merged_integrals);
