@@ -13,6 +13,7 @@ typedef hls::vector<uint32_t, 16> vec_uint32_16;
 #define NUM_INTEGRALS 4
 #define NUM_ALPHAS 5
 #define INTEGRAL_NUM 3
+#define PAIR_HISTORY 4
 
 extern "C" {
     void preprocess(
@@ -25,6 +26,7 @@ extern "C" {
             const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
+	        vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY], // Output pair_buffers
             struct Centroid *centroid // Output Centroid
 	);
 }

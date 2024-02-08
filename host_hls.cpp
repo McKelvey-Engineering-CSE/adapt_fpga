@@ -201,6 +201,7 @@ int main()
     int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
     vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
     Centroid centroid;
+    vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY];
 
     // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
@@ -238,6 +239,7 @@ int main()
                 bounds,
                 zero_thresholds,
                 output_integrals,
+				pair_buffer,
                 (struct Centroid *) &centroid
                 );
 
