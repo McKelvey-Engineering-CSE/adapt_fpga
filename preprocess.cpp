@@ -159,78 +159,54 @@ void island_detection(hls::stream<vec_int32_16> & merged_integrals,
 
 }
 
-void centroiding(hls::stream<vec_int32_16> & island_output,
-                 hls::stream<int16_t> & stream_num_islands,
-                 hls::stream<vec_int32_16> & centroiding_output,
-                 hls::stream<Centroid> & stream_centroid) {
-    uint16_t position_tmp;
-    uint16_t signal_tmp;  
-    vec_int32_16 integral;
-    Centroid centroid;
-    centroiding_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-        centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-            integral = island_output.read();
+void write_islands(hls::stream<vec_int32_16> & island_output,
+	             hls::stream<int16_t> & stream_num_islands,
+				 vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS],
+				 int16_t output_num_islands) {
 
-            if (i == INTEGRAL_NUM) {
-
-                centroiding_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-                    uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
-                    uint16_t signal = (a == 0 && c == 0) ? 0 : signal_tmp;
-                    const uint16_t pos = a * NUM_CHANNELS + c;
-                    position += pos * integral[c];
-                    signal += integral[c];
-                    position_tmp = position;
-                    signal_tmp = signal;
-                }
-            }
-
-            centroiding_output << integral;
-        }
-        if (i == INTEGRAL_NUM) {
-            centroid.count = stream_num_islands.read();        
-            centroid.position = (centroid.count > 0) ? position_tmp / signal_tmp : 0;
-            centroid.signal = (centroid.count > 0) ? signal_tmp : 0;
-            stream_centroid << centroid;
-        }
-    }
-}
-
-void write_pairs(hls::stream<vec_int32_16> centroiding_output[NUM_ALPHAS],
-                     vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY]) {
-
-    // printf("Writing pair buffers\n");
+    // printf("Writing islandsn");
     vec_int32_16 current;
-    write_integrals_integrals: for (uint8_t i = 0; i < PAIR_HISTORY; ++i) {
+    write_integrals_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
         // printf("Pair.\n");
         write_integrals_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-            current = centroiding_output[a].read();
-            pair_buffer[a][i] = current;
+            current = island_output.read();
+            output_islands[a][i] = current;
             // printf("Pair.\n");
         }
     }
+    output_num_islands = stream_num_islands.read();
 }
 
-void write_integrals(hls::stream<vec_int32_16> & centroiding_output,
+void write_integrals(hls::stream<vec_int32_16> & integral_output,
                      vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS]) {
-    
+
     // printf("Writing integrals\n");
     vec_int32_16 current;
     write_integrals_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
         // printf("Integral.\n");
         write_integrals_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-            current = centroiding_output.read();
+            current = integral_output.read();
             output_integrals[a][i] = current;
             // printf("Integral.\n");
         }
     }
 }
 
-void write_centroid(hls::stream<Centroid> & stream_centroid,
-                    Centroid * centroid) {
-    Centroid local_centroid;
-    local_centroid = stream_centroid.read();   
-    *centroid = local_centroid;
+void write_pairs(hls::stream<vec_int32_16> pair_buffer[NUM_ALPHAS],
+                     vec_int32_16 output_pairs[NUM_ALPHAS][NUM_INTEGRALS]) {
+    
+    // printf("Writing integrals\n");
+    vec_int32_16 current;
+    write_integrals_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+        // printf("Integral.\n");
+        write_integrals_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+            current = pair_buffer[a].read();
+            output_pairs[a][i] = current;
+            // printf("Integral.\n");
+        }
+    }
 }
+
 
 void dataflow_alpha(const vec_uint16_16 * samples,
         const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
@@ -287,7 +263,8 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
         vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],      // Output Result (Integrals)
 		vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY], // Output Pair Buffer
-        struct Centroid * centroid, // Output Centroid
+		vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS],
+		int16_t output_num_islands,
         uint8_t banks[NUM_ALPHAS],
         uint8_t starting_sample_numbers[NUM_ALPHAS],
         int16_t base_addrs[NUM_ALPHAS]
@@ -373,10 +350,9 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
                     merged_integrals);
 
     island_detection(merged_integrals,island_output,stream_num_islands);
-    centroiding(island_output,stream_num_islands,centroiding_output,stream_centroid);
-    write_integrals(centroiding_output, output_integrals);
+    write_islands(island_output,stream_num_islands, output_islands, output_num_islands);
+    //write_integrals(centroiding_output, output_integrals);
     write_pairs(raw_pair_data, pair_buffer);
-    write_centroid(stream_centroid, centroid);
     
 
 
@@ -395,7 +371,8 @@ extern "C" {
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
 			vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY], // Output pair_buffers
-            struct Centroid *centroid // Output Centroid
+			vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS],
+			int16_t output_num_islands
 	        )
     {
 #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet0 bundle=aximm1
@@ -408,8 +385,9 @@ extern "C" {
 #pragma HLS INTERFACE mode=bram depth=1 port=bounds
 #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
 #pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm6
-#pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm7
 #pragma HLS INTERFACE m_axi depth=1 port=pair_buffer bundle=aximm8
+#pragma HLS INTERFACE m_axi depth=1 port=output_islands bundle=aximm9
+#pragma HLS INTERFACE m_axi depth=1 port=output_num_islands bundle=aximm10
 
 
         uint8_t banks[NUM_ALPHAS];
@@ -443,7 +421,8 @@ extern "C" {
                  zero_thresholds,
                  output_integrals,
 				 pair_buffer,
-                 centroid,
+                 output_islands,
+				 output_num_islands,
                  banks,
                  starting_sample_numbers,
                  base_addrs);

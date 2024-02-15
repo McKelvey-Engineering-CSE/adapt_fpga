@@ -27,7 +27,8 @@ extern "C" {
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
 	        vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY], // Output pair_buffers
-            struct Centroid *centroid // Output Centroid
+			vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS],
+			int16_t output_num_islands
 	);
 }
 

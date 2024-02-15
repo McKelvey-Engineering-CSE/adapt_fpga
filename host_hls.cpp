@@ -200,8 +200,9 @@ int main()
     vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
     int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
     vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
-    Centroid centroid;
     vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY];
+    vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS];
+    int16_t output_num_islands;
 
     // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
@@ -240,7 +241,8 @@ int main()
                 zero_thresholds,
                 output_integrals,
 				pair_buffer,
-                (struct Centroid *) &centroid
+				output_islands,
+				output_num_islands
                 );
 
     int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
@@ -258,10 +260,6 @@ int main()
                      output_integrals[alpha],
                      input_data_packet + alpha);
     }
-
-    write_header(output_fd, "centroid_position", centroid.position);
-    write_header(output_fd, "centroid_signal", centroid.signal);
-    write_header(output_fd, "centroid_count", centroid.count);
 
     return 0;
 }
