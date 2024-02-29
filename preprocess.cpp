@@ -361,72 +361,98 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
 
 extern "C" {
     void preprocess(
-	        const struct SW_Data_Packet * input_data_packet0, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet1, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet2, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet3, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet4, // Read-Only Data Packet Struct
-	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
-            const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
-            const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-			vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY], // Output pair_buffers
-			vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS],
-			int16_t output_num_islands
+	        hls::stream<const struct SW_Data_Packet *> input_data_packet0_stm, // Read-Only Data Packet Struct
+	        hls::stream<const struct SW_Data_Packet *>input_data_packet1_stm, // Read-Only Data Packet Struct
+	        hls::stream<const struct SW_Data_Packet *>input_data_packet2_stm, // Read-Only Data Packet Struct
+	        hls::stream<const struct SW_Data_Packet *>input_data_packet3_stm, // Read-Only Data Packet Struct
+	        hls::stream<const struct SW_Data_Packet *>input_data_packet4_stm, // Read-Only Data Packet Struct
+			hls::stream<const vec_uint16_16> input_all_peds_stm[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
+            hls::stream<const int16_t> bounds_stm[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+            hls::stream<const int32_t> zero_thresholds_stm[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
+			hls::stream<vec_int32_16> output_integrals_stm[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
+			hls::stream<vec_int32_16[NUM_ALPHAS][PAIR_HISTORY]> pair_buffer_stm, // Output pair_buffers
+			hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_islands_stm,
+			hls::stream<int16_t> output_num_islands_stm
 	        )
     {
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet0 bundle=aximm1
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet1 bundle=aximm2
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet2 bundle=aximm3
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet3 bundle=aximm4
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet4 bundle=aximm5
-#pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds
+#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet0_stm bundle=aximm1
+#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet1_stm bundle=aximm2
+#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet2_stm bundle=aximm3
+#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet3_stm bundle=aximm4
+#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet4_stm bundle=aximm5
+#pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds_stm
 // #pragma HLS array_partition variable=input_all_peds type=complete dim=1
-#pragma HLS INTERFACE mode=bram depth=1 port=bounds
-#pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
-#pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm6
-#pragma HLS INTERFACE m_axi depth=1 port=pair_buffer bundle=aximm8
-#pragma HLS INTERFACE m_axi depth=1 port=output_islands bundle=aximm9
-#pragma HLS INTERFACE m_axi depth=1 port=output_num_islands bundle=aximm10
+#pragma HLS INTERFACE mode=bram depth=1 port=bounds_stm
+#pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds_stm
+#pragma HLS INTERFACE m_axi depth=1 port=output_integrals_stm bundle=aximm6
+#pragma HLS INTERFACE m_axi depth=1 port=pair_buffer_stm bundle=aximm8
+#pragma HLS INTERFACE m_axi depth=1 port=output_islands_stm bundle=aximm9
+#pragma HLS INTERFACE m_axi depth=1 port=output_num_islands_stm bundle=aximm10
 
 
         uint8_t banks[NUM_ALPHAS];
         uint8_t starting_sample_numbers[NUM_ALPHAS];
         int16_t base_addrs[NUM_ALPHAS];
+        struct SW_Data_Packet * input_data_packet0; // Read-Only Data Packet Struct
+		struct SW_Data_Packet * input_data_packet1; // Read-Only Data Packet Struct
+		struct SW_Data_Packet * input_data_packet2; // Read-Only Data Packet Struct
+		struct SW_Data_Packet * input_data_packet3; // Read-Only Data Packet Struct
+		struct SW_Data_Packet * input_data_packet4; // Read-Only Data Packet Struct
+		vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES]; // Read-Only Pedestals
+		int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS]; // Read-Only Integral Bounds
+		int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS]; // Read-Only Thresholds for zero-suppression
+		vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];       // Output Result (Integrals)
+		vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY]; // Output pair_buffers
+		vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS];
+		int16_t output_num_islands;
+        while(1) {
+        	input_data_packet0_stm >> input_data_packet0;
+        	input_data_packet1_stm >> input_data_packet1;
+        	input_data_packet2_stm >> input_data_packet2;
+        	input_data_packet3_stm >> input_data_packet3;
+        	input_data_packet4_stm >> input_data_packet4;
+        	input_all_peds_stm >> input_all_peds;
+        	bounds_stm >> bounds;
+        	zero_thresholds_stm >> zero_thresholds;
+        	output_integrals_stm >> output_integrals;
+        	pair_buffer_stm >> pair_buffer;
+        	output_islands_stm >> output_islands;
+        	output_num_islands_stm >> output_num_islands;
 
-        loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-            const SW_Data_Packet * input_data_packet;
 
-            switch (alpha) {
-                case 0: input_data_packet = input_data_packet0; break;
-                case 1: input_data_packet = input_data_packet1; break;
-                case 2: input_data_packet = input_data_packet2; break;
-                case 3: input_data_packet = input_data_packet3; break;
-                case 4: input_data_packet = input_data_packet4; break;
-            }
+			loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+				const SW_Data_Packet * input_data_packet;
 
-            read_params(input_data_packet,
-                        banks[alpha],
-                        starting_sample_numbers[alpha],
-                        base_addrs[alpha]);
+				switch (alpha) {
+					case 0: input_data_packet = input_data_packet0; break;
+					case 1: input_data_packet = input_data_packet1; break;
+					case 2: input_data_packet = input_data_packet2; break;
+					case 3: input_data_packet = input_data_packet3; break;
+					case 4: input_data_packet = input_data_packet4; break;
+				}
+
+				read_params(input_data_packet,
+							banks[alpha],
+							starting_sample_numbers[alpha],
+							base_addrs[alpha]);
+			}
+
+			dataflow(input_data_packet0,
+					 input_data_packet1,
+					 input_data_packet2,
+					 input_data_packet3,
+					 input_data_packet4,
+					 input_all_peds,
+					 bounds,
+					 zero_thresholds,
+					 output_integrals,
+					 pair_buffer,
+					 output_islands,
+					 output_num_islands,
+					 banks,
+					 starting_sample_numbers,
+					 base_addrs);
+
         }
-
-        dataflow(input_data_packet0,
-                 input_data_packet1,
-                 input_data_packet2,
-                 input_data_packet3,
-                 input_data_packet4,
-                 input_all_peds,
-                 bounds,
-                 zero_thresholds,
-                 output_integrals,
-				 pair_buffer,
-                 output_islands,
-				 output_num_islands,
-                 banks,
-                 starting_sample_numbers,
-                 base_addrs);
-
-
     }
 }

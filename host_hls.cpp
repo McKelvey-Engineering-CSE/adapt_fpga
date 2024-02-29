@@ -116,20 +116,22 @@ int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
     return 0;
 }
 
-int initialize_inputs(struct SW_Data_Packet * data_packet, vec_uint16_16 * all_peds) {
+int initialize_inputs(struct hls::stream<SW_Data_Packet> * data_packet, hls::stream<vec_uint16_16> * all_peds) {
     int data_packet_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/EventStream.dat", 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
     }
-
-    data_packet_dat_to_struct(data_packet_fd, data_packet);
-
+    SW_Data_Packet temp_packet;
+    data_packet_dat_to_struct(data_packet_fd, temp_packet);
+    data_packet << temp_packet;
     int peds_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/peds.dat", 0, "r");
     if (peds_fd == -1) {
         perror("open");
     }
 
-    peds_dat_to_arrays(peds_fd, all_peds);
+    vec_uint16_16 temp_ped;
+    peds_dat_to_arrays(peds_fd, temp_ped);
+    all_peds << temp_ped;
 
     return 0;
 }
@@ -196,41 +198,42 @@ int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data
 int main()
 {
         printf("Beginning of main\n");
-    SW_Data_Packet input_data_packet[NUM_ALPHAS];
-    vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
-    int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
-    vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
-    vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY];
-    vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS];
-    int16_t output_num_islands;
+    hls::stream<SW_Data_Packet> input_data_packet[NUM_ALPHAS];
+    hls::stream<vec_uint16_16> input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
+    hls::stream<int16_t> bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
+    hls::stream<vec_int32_16> output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
+    hls::stream<vec_int32_16[NUM_ALPHAS][PAIR_HISTORY]> pair_buffer;
+    hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_islands;
+    hls::stream<int16_t> output_num_islands;
 
-    // // Initialize the data used in the test
-    for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-        printf("Initializing inputs for alpha %u\n", alpha);
-        initialize_inputs(input_data_packet + alpha,
-                         input_all_peds[alpha]);
+    for(int i=0;i<10;++i) {
+		// // Initialize the data used in the test
+		for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+			printf("Initializing inputs for alpha %u\n", alpha);
+			initialize_inputs(input_data_packet + alpha,
+							 input_all_peds[alpha]);
+		}
+
+		const char * bounds_strings[8] = {"-5", "5", "-10", "10", "-15", "15", "-20", "20"};
+		for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+			bounds[a][0] << atoi(bounds_strings[0]);
+			bounds[a][1] << atoi(bounds_strings[1]);
+			bounds[a][2] << atoi(bounds_strings[2]);
+			bounds[a][3] << atoi(bounds_strings[3]);
+			bounds[a][4] << atoi(bounds_strings[4]);
+			bounds[a][5] << atoi(bounds_strings[5]);
+			bounds[a][6] << atoi(bounds_strings[6]);
+			bounds[a][7] << atoi(bounds_strings[7]);
+		}
+
+		int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS];
+		for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+			 zero_thresholds[a][0] << -1000;
+			 zero_thresholds[a][1] << -1000;
+			 zero_thresholds[a][2] << -1000;
+			 zero_thresholds[a][3] << 5;
+		}
     }
-
-    const char * bounds_strings[8] = {"-5", "5", "-10", "10", "-15", "15", "-20", "20"};
-    for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-        bounds[a][0] = atoi(bounds_strings[0]);
-        bounds[a][1] = atoi(bounds_strings[1]);
-        bounds[a][2] = atoi(bounds_strings[2]);
-        bounds[a][3] = atoi(bounds_strings[3]);
-        bounds[a][4] = atoi(bounds_strings[4]);
-        bounds[a][5] = atoi(bounds_strings[5]);
-        bounds[a][6] = atoi(bounds_strings[6]);
-        bounds[a][7] = atoi(bounds_strings[7]);
-    }
-
-    int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS];
-    for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-         zero_thresholds[a][0] = -1000;
-         zero_thresholds[a][1] = -1000;
-         zero_thresholds[a][2] = -1000;
-         zero_thresholds[a][3] = 5;
-    }
-
     preprocess( &input_data_packet[0],
                 &input_data_packet[1],
                 &input_data_packet[2],
