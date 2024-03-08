@@ -1,0 +1,83 @@
+i2c_address: 0
+conf_address: 0
+bank: 0
+fine_time: 48
+coarse_time: 0
+trigger_number: 0
+samples_after_trigger: 250
+look_back_samples: 5
+samples_to_be_read: 255
+starting_sample_number: 43
+number_of_missed_triggers: 0
+state_machine_status: 0
+0 (-5,5)    11 -5 3 7 -13 3 0 -13 15 2 -12 12 -15 -11 -1 -16
+1 (-10,10)    -27 42 9 -12 45 -5 71 -40 157 -39 -75 -38 29 -96 69 -28
+2 (-15,15)    -55 76 47 -45 -1 42 -40 -98 131 -104 61 5 65 -170 195 -11
+3 (-20,20)    0 32 186 18 0 0 80 0 189 0 68 42 86 0 148 76
+i2c_address: 0
+conf_address: 0
+bank: 0
+fine_time: 48
+coarse_time: 0
+trigger_number: 0
+samples_after_trigger: 250
+look_back_samples: 5
+samples_to_be_read: 255
+starting_sample_number: 43
+number_of_missed_triggers: 0
+state_machine_status: 0
+0 (-5,5)    11 -5 3 7 -13 3 0 -13 15 2 -12 12 -15 -11 -1 -16
+1 (-10,10)    -27 42 9 -12 45 -5 71 -40 157 -39 -75 -38 29 -96 69 -28
+2 (-15,15)    -55 76 47 -45 -1 42 -40 -98 131 -104 61 5 65 -170 195 -11
+3 (-20,20)    0 32 186 18 0 0 80 0 189 0 68 42 86 0 148 76
+i2c_address: 0
+conf_address: 0
+bank: 0
+fine_time: 48
+coarse_time: 0
+trigger_number: 0
+samples_after_trigger: 250
+look_back_samples: 5
+samples_to_be_read: 255
+starting_sample_number: 43
+number_of_missed_triggers: 0
+state_machine_status: 0
+0 (-5,5)    11 -5 3 7 -13 3 0 -13 15 2 -12 12 -15 -11 -1 -16
+1 (-10,10)    -27 42 9 -12 45 -5 71 -40 157 -39 -75 -38 29 -96 69 -28
+2 (-15,15)    -55 76 47 -45 -1 42 -40 -98 131 -104 61 5 65 -170 195 -11
+3 (-20,20)    0 32 186 18 0 0 80 0 189 0 68 42 86 0 148 76
+i2c_address: 0
+conf_address: 0
+bank: 0
+fine_time: 48
+coarse_time: 0
+trigger_number: 0
+samples_after_trigger: 250
+look_back_samples: 5
+samples_to_be_read: 255
+starting_sample_number: 43
+number_of_missed_triggers: 0
+state_machine_status: 0
+0 (-5,5)    11 -5 3 7 -13 3 0 -13 15 2 -12 12 -15 -11 -1 -16
+1 (-10,10)    -27 42 9 -12 45 -5 71 -40 157 -39 -75 -38 29 -96 69 -28
+2 (-15,15)    -55 76 47 -45 -1 42 -40 -98 131 -104 61 5 65 -170 195 -11
+3 (-20,20)    0 32 186 18 0 0 80 0 189 0 68 42 86 0 148 76
+i2c_address: 0
+conf_address: 0
+bank: 0
+fine_time: 48
+coarse_time: 0
+trigger_number: 0
+samples_after_trigger: 250
+look_back_samples: 5
+samples_to_be_read: 255
+starting_sample_number: 43
+number_of_missed_triggers: 0
+state_machine_status: 0
+0 (-5,5)    11 -5 3 7 -13 3 0 -13 15 2 -12 12 -15 -11 -1 -16
+1 (-10,10)    -27 42 9 -12 45 -5 71 -40 157 -39 -75 -38 29 -96 69 -28
+2 (-15,15)    -55 76 47 -45 -1 42 -40 -98 131 -104 61 5 65 -170 195 -11
+3 (-20,20)    0 32 186 18 0 0 80 0 189 0 68 42 86 0 148 76
+centroid_position: 12
+centroid_signal: 4625
+centroid_count: 25
