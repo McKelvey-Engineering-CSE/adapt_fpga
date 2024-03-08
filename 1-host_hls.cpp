@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #include "preprocess.h"
+#include "filepath.h"
 
 int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
 
@@ -117,14 +118,14 @@ int peds_dat_to_arrays(int fd, uint16_t * all_peds){
 }
 
 int initialize_inputs(struct SW_Data_Packet * data_packet, uint16_t * all_peds) {
-    int data_packet_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/EventStream.dat", 0, "r");
+    int data_packet_fd = open(packet_file, 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
     }
 
     data_packet_dat_to_struct(data_packet_fd, data_packet);
 
-    int peds_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/peds.dat", 0, "r");
+    int peds_fd = open(ped_file, 0, "r");
     if (peds_fd == -1) {
         perror("open");
     }
