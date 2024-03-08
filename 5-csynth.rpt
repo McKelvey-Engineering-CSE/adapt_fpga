@@ -1,0 +1,277 @@
+
+
+================================================================
+== Synthesis Summary Report of 'preprocess'
+================================================================
++ General Information: 
+    * Date:           Sun Jan  7 20:11:03 2024
+    * Version:        2021.1 (Build 3247384 on Thu Jun 10 19:36:07 MDT 2021)
+    * Project:        sw_emu_project
+    * Solution:       solution1 (Vivado IP Flow Target)
+    * Product family: kintex7
+    * Target device:  xc7k325t-ffg900-2
+    
+
++ Performance & Resource Estimates: 
+    
+    PS: '+' for module; 'o' for loop; '*' for dataflow
+    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+    |                            Modules                           |  Issue |       | Latency |  Latency  | Iteration|         | Trip |          |           |         |            |             |     |
+    |                            & Loops                           |  Type  | Slack | (cycles)|    (ns)   |  Latency | Interval| Count| Pipelined|   BRAM    |   DSP   |     FF     |     LUT     | URAM|
+    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+    |+ preprocess                                                  |  Timing|  -0.00|      301|  3.010e+03|         -|      302|     -|        no|  813 (91%)|  15 (1%)|  36160 (8%)|  63868 (31%)|    -|
+    | + grp_dataflow_fu_662*                                       |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  597 (67%)|  15 (1%)|  23787 (5%)|  38522 (18%)|    -|
+    |  + add_ln296_loc_channel_dataflow_Block_split1_proc_fu_812   |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln305_loc_channel_dataflow_Block_split13_proc_fu_818  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln314_loc_channel_dataflow_Block_split15_proc_fu_824  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln323_loc_channel_dataflow_Block_split17_proc_fu_830  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + add_ln332_loc_channel_dataflow_Block_split19_proc_fu_836  |       -|   5.57|        0|      0.000|         -|        0|     -|        no|          -|        -|    66 (~0%)|     91 (~0%)|    -|
+    |  + grp_dataflow_alpha7_fu_842*                               |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2436 (~0%)|    5448 (2%)|    -|
+    |   + grp_read_samples12_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples12_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract13_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate14_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate14_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate14_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress15_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha8_fu_877*                               |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples16_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples16_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract17_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate18_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate18_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate18_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress19_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha9_fu_912*                               |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples20_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples20_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract21_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate22_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate22_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate22_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress23_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha10_fu_947*                              |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples24_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples24_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract25_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate26_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate26_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate26_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress27_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_dataflow_alpha11_fu_982*                              |  Timing|  -0.00|      282|  2.820e+03|         -|      274|     -|  dataflow|  102 (11%)|        -|  2435 (~0%)|    5439 (2%)|    -|
+    |   + grp_read_samples28_fu_142                                |  Timing|  -0.00|      267|  2.670e+03|         -|      267|     -|        no|          -|        -|   341 (~0%)|    286 (~0%)|    -|
+    |    + grp_read_samples28_Pipeline_read_samples_loop_fu_53     |  Timing|  -0.00|      259|  2.590e+03|         -|      259|     -|        no|          -|        -|   271 (~0%)|     87 (~0%)|    -|
+    |     o read_samples_loop                                      |       -|   7.30|      257|  2.570e+03|         3|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_ped_subtract29_fu_151                                |       -|   0.74|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|    12 (~0%)|    488 (~0%)|    -|
+    |    o ped_samples                                             |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |   + grp_integrate30_fu_163                                   |       -|   0.60|      273|  2.730e+03|         -|      273|     -|        no|    29 (3%)|        -|  1607 (~0%)|    3375 (1%)|    -|
+    |    + grp_integrate30_Pipeline_int_samples_fu_131             |       -|   0.91|      258|  2.580e+03|         -|      258|     -|        no|          -|        -|   533 (~0%)|    844 (~0%)|    -|
+    |     o int_samples                                            |       -|   7.30|      256|  2.560e+03|         2|        1|   256|       yes|          -|        -|           -|            -|    -|
+    |    + grp_integrate30_Pipeline_int_integrals_fu_138           |       -|   0.60|        9|     90.000|         -|        9|     -|        no|          -|        -|   552 (~0%)|    2396 (1%)|    -|
+    |     o int_integrals                                          |       -|   7.30|        7|     70.000|         5|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |   + grp_zero_suppress31_fu_173                               |       -|   0.51|        6|     60.000|         -|        6|     -|        no|          -|        -|     6 (~0%)|   1019 (~0%)|    -|
+    |    o zero_integrals                                          |       -|   7.30|        4|     40.000|         2|        1|     4|       yes|          -|        -|           -|            -|    -|
+    |  + grp_merge_integrals_fu_1017                               |       -|   1.29|       22|    220.000|         -|       22|     -|        no|          -|        -|    16 (~0%)|   1266 (~0%)|    -|
+    |   o VITIS_LOOP_112_1_VITIS_LOOP_113_2                        |       -|   7.30|       20|    200.000|         2|        1|    20|       yes|          -|        -|           -|            -|    -|
+    |  + grp_island_detection_fu_1103                              |  Timing|  -0.00|      105|  1.050e+03|         -|      105|     -|        no|          -|        -|   158 (~0%)|   1289 (~0%)|    -|
+    |   + grp_island_detection_Pipeline_island_alphas_fu_67        |  Timing|  -0.00|       23|    230.000|         -|       23|     -|        no|          -|        -|   127 (~0%)|   1182 (~0%)|    -|
+    |    o island_alphas                                           |      II|   7.30|       21|    210.000|         6|        4|     5|       yes|          -|        -|           -|            -|    -|
+    |   o island_integrals                                         |       -|   7.30|      104|  1.040e+03|        26|        -|     4|        no|          -|        -|           -|            -|    -|
+    |  + grp_centroiding_fu_1112                                   |       -|   0.49|      137|  1.370e+03|         -|      137|     -|        no|          -|  15 (1%)|   850 (~0%)|   1182 (~0%)|    -|
+    |   + grp_centroiding_Pipeline_centroiding_alphas_fu_92        |       -|   0.49|       12|    120.000|         -|       12|     -|        no|          -|  15 (1%)|   551 (~0%)|    802 (~0%)|    -|
+    |    o centroiding_alphas                                      |       -|   7.30|       10|    100.000|         7|        1|     5|       yes|          -|        -|           -|            -|    -|
+    |   o centroiding_integrals                                    |       -|   7.30|      136|  1.360e+03|        34|        -|     4|        no|          -|        -|           -|            -|    -|
+    |  + call_ret_entry_proc_fu_1122                               |       -|   7.30|        0|      0.000|         -|        0|     -|        no|          -|        -|   130 (~0%)|     29 (~0%)|    -|
+    |  + grp_write_integrals_fu_1130                               |  Timing|  -0.00|       28|    280.000|         -|       28|     -|        no|          -|        -|   596 (~0%)|    245 (~0%)|    -|
+    |   o write_integrals_integrals_write_integrals_alphas         |       -|   7.30|       26|    260.000|         8|        1|    20|       yes|          -|        -|           -|            -|    -|
+    |  + grp_write_centroid_fu_1139                                |  Timing|  -0.00|        8|     80.000|         -|        8|     -|        no|          -|        -|   239 (~0%)|    493 (~0%)|    -|
+    | o loop_alphas                                                |       -|   7.30|        5|     50.000|         1|        1|     5|       yes|          -|        -|           -|            -|    -|
+    +--------------------------------------------------------------+--------+-------+---------+-----------+----------+---------+------+----------+-----------+---------+------------+-------------+-----+
+
+
+================================================================
+== HW Interfaces
+================================================================
+* M_AXI
++--------------+--------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
+| Interface    | Data Width   | Address Width | Latency | Offset | Register | Max Widen | Max Read     | Max Write    | Num Read    | Num Write   |
+|              | (SW->HW)     |               |         |        |          | Bitwidth  | Burst Length | Burst Length | Outstanding | Outstanding |
++--------------+--------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
+| m_axi_aximm1 | 66048 -> 256 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm2 | 66048 -> 256 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm3 | 66048 -> 256 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm4 | 66048 -> 256 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm5 | 66048 -> 256 | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm6 | 512 -> 512   | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
+| m_axi_aximm7 | 48 -> 64     | 64            | 0       | slave  | 0        | 0         | 16           | 16           | 16          | 16          |
++--------------+--------------+---------------+---------+--------+----------+-----------+--------------+--------------+-------------+-------------+
+
+* S_AXILITE
++---------------+------------+---------------+--------+----------+
+| Interface     | Data Width | Address Width | Offset | Register |
++---------------+------------+---------------+--------+----------+
+| s_axi_control | 32         | 7             | 16     | 0        |
++---------------+------------+---------------+--------+----------+
+
+* BRAM
++-------------------------+------------+---------------+
+| Interface               | Data Width | Address Width |
++-------------------------+------------+---------------+
+| bounds_0_PORTA          | 16         | 32            |
+| bounds_0_PORTB          | 16         | 32            |
+| bounds_1_PORTA          | 16         | 32            |
+| bounds_1_PORTB          | 16         | 32            |
+| bounds_2_PORTA          | 16         | 32            |
+| bounds_2_PORTB          | 16         | 32            |
+| bounds_3_PORTA          | 16         | 32            |
+| bounds_3_PORTB          | 16         | 32            |
+| bounds_4_PORTA          | 16         | 32            |
+| bounds_4_PORTB          | 16         | 32            |
+| input_all_peds_0_PORTA  | 256        | 32            |
+| input_all_peds_1_PORTA  | 256        | 32            |
+| input_all_peds_2_PORTA  | 256        | 32            |
+| input_all_peds_3_PORTA  | 256        | 32            |
+| input_all_peds_4_PORTA  | 256        | 32            |
+| zero_thresholds_0_PORTA | 32         | 32            |
+| zero_thresholds_1_PORTA | 32         | 32            |
+| zero_thresholds_2_PORTA | 32         | 32            |
+| zero_thresholds_3_PORTA | 32         | 32            |
+| zero_thresholds_4_PORTA | 32         | 32            |
++-------------------------+------------+---------------+
+
+* TOP LEVEL CONTROL
++-----------+------------+-----------------------------------+
+| Interface | Type       | Ports                             |
++-----------+------------+-----------------------------------+
+| ap_clk    | clock      | ap_clk                            |
+| ap_rst_n  | reset      | ap_rst_n                          |
+| ap_ctrl   | ap_ctrl_hs | ap_done ap_idle ap_ready ap_start |
++-----------+------------+-----------------------------------+
+
+
+================================================================
+== SW I/O Information
+================================================================
+* Top Function Arguments
++--------------------+-----------+------------------------------------+
+| Argument           | Direction | Datatype                           |
++--------------------+-----------+------------------------------------+
+| input_data_packet0 | in        | SW_Data_Packet const *             |
+| input_data_packet1 | in        | SW_Data_Packet const *             |
+| input_data_packet2 | in        | SW_Data_Packet const *             |
+| input_data_packet3 | in        | SW_Data_Packet const *             |
+| input_data_packet4 | in        | SW_Data_Packet const *             |
+| input_all_peds     | in        | vector<unsigned short, 16> const * |
+| bounds             | in        | short const *                      |
+| zero_thresholds    | in        | int const *                        |
+| output_integrals   | out       | vector<int, 16>*                   |
+| centroid           | out       | Centroid*                          |
++--------------------+-----------+------------------------------------+
+
+* SW-to-HW Mapping
++--------------------+------------------------------------+-----------+----------+-----------------------+
+| Argument           | HW Name                            | HW Type   | HW Usage | HW Info               |
++--------------------+------------------------------------+-----------+----------+-----------------------+
+| input_data_packet0 | m_axi_aximm1                       | interface |          |                       |
+| input_data_packet0 | s_axi_control input_data_packet0_1 | register  | offset   | offset=0x10, range=32 |
+| input_data_packet0 | s_axi_control input_data_packet0_2 | register  | offset   | offset=0x14, range=32 |
+| input_data_packet1 | m_axi_aximm2                       | interface |          |                       |
+| input_data_packet1 | s_axi_control input_data_packet1_1 | register  | offset   | offset=0x1c, range=32 |
+| input_data_packet1 | s_axi_control input_data_packet1_2 | register  | offset   | offset=0x20, range=32 |
+| input_data_packet2 | m_axi_aximm3                       | interface |          |                       |
+| input_data_packet2 | s_axi_control input_data_packet2_1 | register  | offset   | offset=0x28, range=32 |
+| input_data_packet2 | s_axi_control input_data_packet2_2 | register  | offset   | offset=0x2c, range=32 |
+| input_data_packet3 | m_axi_aximm4                       | interface |          |                       |
+| input_data_packet3 | s_axi_control input_data_packet3_1 | register  | offset   | offset=0x34, range=32 |
+| input_data_packet3 | s_axi_control input_data_packet3_2 | register  | offset   | offset=0x38, range=32 |
+| input_data_packet4 | m_axi_aximm5                       | interface |          |                       |
+| input_data_packet4 | s_axi_control input_data_packet4_1 | register  | offset   | offset=0x40, range=32 |
+| input_data_packet4 | s_axi_control input_data_packet4_2 | register  | offset   | offset=0x44, range=32 |
+| input_all_peds     | input_all_peds_0_PORTA             | interface |          |                       |
+| input_all_peds     | input_all_peds_1_PORTA             | interface |          |                       |
+| input_all_peds     | input_all_peds_2_PORTA             | interface |          |                       |
+| input_all_peds     | input_all_peds_3_PORTA             | interface |          |                       |
+| input_all_peds     | input_all_peds_4_PORTA             | interface |          |                       |
+| bounds             | bounds_0_PORTA                     | interface |          |                       |
+| bounds             | bounds_0_PORTB                     | interface |          |                       |
+| bounds             | bounds_1_PORTA                     | interface |          |                       |
+| bounds             | bounds_1_PORTB                     | interface |          |                       |
+| bounds             | bounds_2_PORTA                     | interface |          |                       |
+| bounds             | bounds_2_PORTB                     | interface |          |                       |
+| bounds             | bounds_3_PORTA                     | interface |          |                       |
+| bounds             | bounds_3_PORTB                     | interface |          |                       |
+| bounds             | bounds_4_PORTA                     | interface |          |                       |
+| bounds             | bounds_4_PORTB                     | interface |          |                       |
+| zero_thresholds    | zero_thresholds_0_PORTA            | interface |          |                       |
+| zero_thresholds    | zero_thresholds_1_PORTA            | interface |          |                       |
+| zero_thresholds    | zero_thresholds_2_PORTA            | interface |          |                       |
+| zero_thresholds    | zero_thresholds_3_PORTA            | interface |          |                       |
+| zero_thresholds    | zero_thresholds_4_PORTA            | interface |          |                       |
+| output_integrals   | m_axi_aximm6                       | interface |          |                       |
+| output_integrals   | s_axi_control output_integrals_1   | register  | offset   | offset=0x4c, range=32 |
+| output_integrals   | s_axi_control output_integrals_2   | register  | offset   | offset=0x50, range=32 |
+| centroid           | m_axi_aximm7                       | interface |          |                       |
+| centroid           | s_axi_control centroid_1           | register  | offset   | offset=0x58, range=32 |
+| centroid           | s_axi_control centroid_2           | register  | offset   | offset=0x5c, range=32 |
++--------------------+------------------------------------+-----------+----------+-----------------------+
+
+
+================================================================
+== M_AXI Burst Information
+================================================================
+* Burst Summary
++--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
+| HW Interface | Loop              | Message                                                                                                                                                                                                                        | Location                  |
++--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
+| m_axi_aximm7 |                   | Multiple burst writes of variable length and bit width 64. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings. | src/preprocess.cpp:212:15 |
+| m_axi_aximm1 | read_samples_loop | Multiple burst reads of length 256 and bit width 256. These bursts requests might be further partitioned into multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.      | src/preprocess.cpp:26:24  |
++--------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
+
+* Bursts and Widening Missed
++--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
+| HW Interface | Variable           | Loop        | Problem                                  | Resolution | Location                  |
++--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm1 | input_data_packet0 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm2 | input_data_packet1 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm3 | input_data_packet2 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm4 | input_data_packet3 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
+| m_axi_aximm5 | input_data_packet4 | loop_alphas | Access load is in the conditional branch | 214-232    | src/preprocess.cpp:386:22 |
++--------------+--------------------+-------------+------------------------------------------+------------+---------------------------+
+
+    * Resolution URL: www.xilinx.com/cgi-bin/docs/rdoc?v=2021.1;t=hls+guidance;d=XXX-YYY.html (replace XXX-YYY with column value)
+
