@@ -60,7 +60,7 @@ AMD XILINX Vitis HLS 2021.1. Installation instructions are provided below.
 
 ### Data sets
 
-Sample data packet (`EventStream.dat`) and pedestal value (`peds.dat`) files from the front-end ALPHA ASIC are included in the repository.
+Sample data packet, `EventStream.dat`, and pedestal value, `peds.dat`, files from the front-end ALPHA ASIC are included in the repository.
 
 ## Installation
 
@@ -102,7 +102,7 @@ The repository contains a copy of the testbench and kernel files for each implem
 
 * `1-preprocess.cpp` is the HLS code for the kernel corresponding to implementation **1. Functional Baseline**.
 * `1-host_hls.cpp` is the C++ code for the testbench corresponding to **1. Functional Baseline**.
-* `1-preprocess.h` is the commont C++ header file for the two.
+* `1-preprocess.h` is the common C++ header file for the two.
 
 
 We also provide a single header file, `filepath.h`, that defines paths to the input data file and output result file used by the simulation. Modify the following line of the file to reflect the actual path to the repository on your evaluation system:
@@ -150,11 +150,3 @@ The report file itself is generated in `/(solution path)/sim/report/preprocess_c
 We have provided the corresponding report for each implementation in the repository. For example, `1-preprocess_cosim.rpt` corresponds to implementation **1. Functional Baseline**.
 
 This step also creates an `output.txt` file similarly to C Synthesis. It can also be compared to `output_five_centroiding.txt`. As we have noted in the paper, the output produced by the **0. Na&iuml;ve** implementation is incorrect. The output from that implementation is instead expected to match the file `output_naive.txt`.
-
-## Methodology
-
-Submission, reviewing and badging methodology:
-
-* https://www.acm.org/publications/policies/artifact-review-badging
-* http://cTuning.org/ae/submission-20201122.html
-* http://cTuning.org/ae/reviewing-20201122.html
