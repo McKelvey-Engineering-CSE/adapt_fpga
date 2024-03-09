@@ -1,9 +1,16 @@
 
-# Artifact Appendix
+# Artifact for "HLS Taking Flight: Toward Using High-Level Synthesis Techniques in a Space-Borne Instrument"
 
 ## Abstract
 
-This artifact contains the kernel and test bench source code for high-level synthesis (HLS) of ADAPT's data preprocessing and reduction algorithms. Code is written in C++ for compilation in the AMD XILINX Vitis HLS version 2021.1, targeting the Kintex-7 KC 705 evaluation platform (XC7K325T). Additional data files encoding a sample data packet and analog memory pedestal values from the front-end analog waveform digitizer ASIC are also included for testing purposes.
+This artifact contains the kernel and test bench source code for high-level synthesis (HLS) of ADAPT's data preprocessing and reduction algorithms as presented in:
+
+> M. Sudvarg, C. Zhao, Y. Htet, M. Konst, T. Lang, N. Song, R. D. Chamberlain, J. Buh-
+ler, and J. H. Buckley. "HLS Taking Flight: Toward Using High-Level Synthesis Techniques
+in a Space-Borne Instrument." In Proc. of 21st International Conference on Computing
+Frontiers. ACM, 2024.
+
+Code is written in C++ for compilation in the AMD XILINX Vitis HLS version 2021.1, targeting the Kintex-7 KC 705 evaluation platform (XC7K325T). Additional data files encoding a sample data packet and analog memory pedestal values from the front-end analog waveform digitizer ASIC are also included for testing purposes.
 
 Users of this artifact can reproduce the results shown in Table 1. Users will need to install the free Vitis HLS software, which will emulate the target FPGA. Users **do not** need a physical FPGA to reproduce this artifact.
 
@@ -19,17 +26,17 @@ Users of this artifact can reproduce the results shown in Table 1. Users will ne
   * **Approximate time to prepare workflow:** 1--2 hours to install Vitis HLS.
   * **Approximate time to complete experiments:** 1 hour.
   * **Publicly available?:** Yes.
-  * **Code licenses (if publicly available)?:** GNU GPL v2.
-  * **Data licenses (if publicly available)?:** GNU GPL v2.
+  * **Code licenses (if publicly available)?:** MIT.
+  * **Data licenses (if publicly available)?:** MIT.
   * **Workflow framework used?:** No.
-  * **Archived (provide DOI)?:** Note to reviewers: artifact will be archived, with DOI, through Washington University in St. Louis libraries. DOI will be provided prior to camera-ready submission.
+  * **Archived (provide DOI)?:** This artifact will be archived, with DOI, through Washington University in St. Louis libraries. DOI will be provided when available
 
 
 ## Description
 
 ### How to access
 
-**Note to reviewers:** this artifact is currently available on Github, but will be archived, with DOI, through Washington University in St. Louis libraries. This appendix will be updated prior to camera-ready submission with a link to the archival repository.
+**Note:** This artifact is currently available on Github, but will be archived, with DOI, through Washington University in St. Louis libraries. This readme will be updated with a link to the archival repository, when it becomes available.
 
 Retrieve from https://github.com/McKelvey-Engineering-CSE/adapt_fpga/tree/computing-frontiers-2024:
 
