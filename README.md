@@ -14,6 +14,16 @@ Code is written in C++ for compilation in the AMD XILINX Vitis HLS version 2021.
 
 Users of this artifact can reproduce the results shown in Table 1. Users will need to install the free Vitis HLS software, which will emulate the target FPGA. Users **do not** need a physical FPGA to reproduce this artifact.
 
+## Author Information
+
+For questions about this artifact, please contact:
+
+Marion Sudvarg
+McKelvey School of Engineering
+Washington University in St. Louis
+St. Louis, Missouri, USA
+msudvarg@wustl.edu
+
 ## Artifact check-list (meta-information)
 
   * **Algorithm:** We present implementations of data pre-processing algorithms (Listings 1--5) for high-energy particle telescopes.
