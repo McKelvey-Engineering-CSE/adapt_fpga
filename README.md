@@ -43,9 +43,16 @@ msudvarg@wustl.edu
 
 ### How to access
 
-**Note:** This artifact is currently available on Github, but will be archived, with DOI, through Washington University in St. Louis libraries. This readme will be updated with a link to the archival repository, when it becomes available.
+This artifact is available on GitHub and an archival repository through the Washington University in St. Louis libraries.
 
-Retrieve from https://github.com/McKelvey-Engineering-CSE/adapt_fpga/tree/computing-frontiers-2024:
+Archival repository links:
+
+https://doi.org/10.7936/6RXS-103658
+https://data.library.wustl.edu/record/103658
+
+Retrieve from GitHub:
+
+https://github.com/McKelvey-Engineering-CSE/adapt_fpga/tree/computing-frontiers-2024
 
 
     git clone https://github.com/McKelvey-Engineering-CSE/adapt_fpga/
