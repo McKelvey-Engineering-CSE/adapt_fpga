@@ -48,6 +48,7 @@ This artifact is available on GitHub and an archival repository through the Wash
 Archival repository links:
 
 https://doi.org/10.7936/6RXS-103658
+
 https://data.library.wustl.edu/record/103658
 
 Retrieve from GitHub:
