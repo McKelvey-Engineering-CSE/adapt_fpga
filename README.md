@@ -13,7 +13,7 @@ Users of this artifact can reproduce the results shown in Table 1. Users will ne
 
 ## Release Title
 
-FPGA Kernels for Front-End ASIC Pre-Processing on ADAPT V1
+FPGA Kernels for Front-End Pre-Processing on ADAPT V1
 
 ## Author Information
 
