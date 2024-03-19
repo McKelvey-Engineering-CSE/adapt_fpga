@@ -11,15 +11,91 @@ Code is written in C++ for compilation in the AMD XILINX Vitis HLS version 2021.
 
 Users of this artifact can reproduce the results shown in Table 1. Users will need to install the free Vitis HLS software, which will emulate the target FPGA. Users **do not** need a physical FPGA to reproduce this artifact.
 
+## Release Title
+
+FPGA Kernels for Front-End ASIC Pre-Processing on ADAPT V1
+
 ## Author Information
 
-For questions about this artifact, please contact:
+  **Lead Author and Primary Contact:**
+		Marion Baumli Sudvarg
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		msudvarg@wustl.edu
+		OrcID: 0000-0003-2318-7763
 
-Marion Sudvarg
-McKelvey School of Engineering
-Washington University in St. Louis
-St. Louis, Missouri, USA
-msudvarg@wustl.edu
+
+  **Principal Investigator:**
+		James H. Buckley
+		Dept. of Physics
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		buckley@wustl.edu
+		OrcID: 0000-0001-6391-9661
+
+
+  **Co-Principal Investigator:**
+		Roger D. Chamberlain
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		roger@wustl.edu
+		OrcID: 0000-0002-7207-6106
+
+
+  **Co-Principal Investigator:**
+		Jeremy Buhler
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		jbuhler@wustl.edu
+		OrcID: 0000-0002-4159-4226
+
+
+  **Co-Author:**
+		Chenfeng Zhao
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		chenfeng.zhao@wustl.edu
+		OrcID: 0000-0001-9952-0628
+
+
+  Co-Author:
+		Ye Htet
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		htet.ye@wustl.edu
+		OrcID: 0009-0006-8477-1460
+
+
+  **Co-Author:**
+		Meagan Konst
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		meagan.konst@wustl.edu
+		OrcID: 0009-0001-1508-8143
+
+
+  **Co-Author:**
+		Thomas Lang
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		lang.thomas@wustl.edu
+		OrcID: 0009-0005-5731-3969
+
+
+  **Co-Author:**
+		Nick Song
+		Dept. of Computer Science and Engineering
+		Washington University in St. Louis
+		https://ror.org/01yc7t268
+		qinzhounick@wustl.edu
+		OrcID: 0009-0006-1589-693X
 
 ## Artifact check-list (meta-information)
 
@@ -32,11 +108,11 @@ msudvarg@wustl.edu
   * **Approximate disk space required:** 50GB to install Vitis HLS.
   * **Approximate time to prepare workflow:** 1--2 hours to install Vitis HLS.
   * **Approximate time to complete experiments:** 1 hour.
-  * **Publicly available?:** Yes.
-  * **Code licenses (if publicly available)?:** MIT.
-  * **Data licenses (if publicly available)?:** MIT.
-  * **Workflow framework used?:** No.
-  * **Archived (provide DOI)?:** This artifact will be archived, with DOI, through Washington University in St. Louis libraries. DOI will be provided when available
+  * **Publicly available:** Yes.
+  * **Code licenses:** MIT.
+  * **Data licenses:** MIT.
+  * **Workflow framework used:** No.
+  * **Archived:** https://doi.org/10.7936/6RXS-103658
 
 
 ## Description
@@ -165,3 +241,111 @@ The report file itself is generated in `/(solution path)/sim/report/preprocess_c
 We have provided the corresponding report for each implementation in the repository. For example, `1-preprocess_cosim.rpt` corresponds to implementation **1. Functional Baseline**.
 
 This step also creates an `output.txt` file similarly to C Synthesis. It can also be compared to `output_five_centroiding.txt`. As we have noted in the paper, the output produced by the **0. Na&iuml;ve** implementation is incorrect. The output from that implementation is instead expected to match the file `output_naive.txt`.
+
+
+## Additional Details
+
+### Dates
+
+   Software code and hardware specifications were developed during 2022 - 2024.
+		
+   All result data were produced from December 2023 - January 2024.
+		
+
+
+### Geographic Location
+
+   All experiments were performed at the Washington University Danforth Campus in St. Louis and St. Louis County, MO, USA.
+
+
+### Funding
+
+   This work was supported by NASA award 80NSSC21K1741 and NSF award CNS-1763503.
+		
+
+### Contextual description of the data
+
+   This data contains the kernel and test bench source code for high-level synthesis (HLS) of ADAPT's data preprocessing and reduction algorithms, as well as measured FPGA timing latency and resource utilization numbers, to reproduce the results presented in:
+		
+   > M. Sudvarg, C. Zhao, Y. Htet, M. Konst, T. Lang, N. Song, R. D. Chamberlain, J. Buhler, and J. H. Buckley. "HLS Taking Flight: Toward Using High-Level Synthesis Techniques in a Space-Borne Instrument." In Proc. of 21st International Conference on Computing Frontiers. ACM, 2024. doi: 10.1145/3649153.3649209
+		
+### License 
+
+   All source code is released under the MIT license.
+		
+   The input data sets are in the public domain.
+		
+### Original sources for input data
+
+   University of Hawaii Varner Lab's ALPHA ASIC simulator.
+		
+### Data and File Overview
+
+
+   This is version 1 of the pre-processing software and FPGA kernel.
+	
+   There are 45 files in total. These include:
+	
+   1. Test Bench Files
+	
+		These include the C++ source code to implement host-side testing, e.g., sending data packets and calibration values to the FPGA, and retrieving output.
+		
+		Files include:
+		
+		* `n-host_hls.cpp`, where 'n' is a number 0-6. Each value of 'n' corresponds to one of the tested implementations (a summary of which are in Table 1 of the referenced publication).
+			
+		* `filepath.h`, which defines file paths for the test bench to read and write data.
+		
+   2. Kernel Files
+	
+		These include the C++ source code for high-level synthesis into FPGA kernels.
+		
+		Files include:
+		
+		* `n-preprocess.cpp`, which implements the kernel.
+			
+		* `n-preprocess.h`, a header that includes definitions of common data formats, constant values, and function signatures between the kernel and testbench.
+		
+		Again, 'n' is a number 0-6 corresponding to one of the tested implementations.
+		
+   3. Reports
+	
+		These are reports on timing and resource utilization from the FPGA kernel synthesis tools.
+		
+		Files include:
+		
+		* `n-csynth.rpt`, which is the report from C synthesis and includes initiation interval and resource utilization/FPGA area numbers.
+			
+		* `n-preprocess_cosim.rpt`, which is the report from C/RTL co-simulation (FPGA kernel emulation in software) and includes more realistic latency numbers.			
+		
+		
+		Again, 'n' is a number 0-6 corresponding to one of the tested implementations.
+		
+		Though these have a '.rpt' extension, they are plain-text, human-readable files.
+		
+   4. Input Data
+	
+		These are inputs to the FPGA produced by the
+		University of Hawaii Varner Lab's ALPHA ASIC simulator.
+		
+		Files include:
+		
+		* `peds.dat`, a set of values representing the pedestal values for the ALPHA ASIC's analog memory cells.
+			
+		* `EventStream.dat`, a stream of bits representing a single data packet sent via serial interface from the ALPHA ASIC to the FPGA.
+			
+   5. Output Data
+	
+		These are debug outputs against which the FPGA simulation output can be compared.
+		
+		Files include:
+		
+		* `output_five_centroiding.txt`, which is the correct output resulting from a run of the FPGA kernel for the supplied data packet.
+			
+		* `output_naive.txt`, which is incorrect output, but matches the output from the naive implementation discussed in the referenced paper.
+		
+   6. Instructional Files
+	
+		`README.md` and `README.pdf` include instructions for reproducing the results in the referenced paper.
+		
+		The PDF includes more details, including screenshots.
