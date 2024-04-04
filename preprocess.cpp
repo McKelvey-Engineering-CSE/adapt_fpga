@@ -59,7 +59,11 @@ void ped_subtract(hls::stream<Header> & header_stm_in,
     Header header;
     header_stm_in >> header;
     vec_uint16_16 peds[2*NUM_SAMPLES];
-    peds = header.input_all_peds[alpha];
+    for(int i = 0; i < 2*NUM_SAMPLES; ++i) {
+        for(int j = 0; j < 16; ++j) {
+            peds[i][j] = header.input_all_peds[alpha][i][j];
+        }
+    }
     ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
 
         vec_uint16_16 svec = packet_samples.read();
@@ -90,8 +94,10 @@ void integrate(hls::stream<Header> & header_stm_in,
                hls::stream<vec_int32_16> & integrals) {
     Header header;
     header_stm_in >> header;
-    vec_uint16_16 bounds[2*NUM_INTEGRALS];
-    bounds = header.bounds[alpha];
+    int16_t bounds[2*NUM_INTEGRALS];
+    for(int i = 0; i < 2*NUM_INTEGRALS; ++i) {
+        bounds[i] = header.bounds[alpha][i];
+    }
     vec_int32_16 samples;
     vec_int32_16 tmp_integrals[NUM_INTEGRALS];
     // #pragma HLS ARRAY_PARTITION variable=tmp_integrals type=complete dim=1
