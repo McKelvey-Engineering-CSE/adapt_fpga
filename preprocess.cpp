@@ -30,13 +30,17 @@ static void read_samples(const vec_uint16_16 * samples,
 }
 
 
-void ped_subtract(const uint8_t bank,
+void ped_subtract(hls::stream<Header> & header_stm_in,
+                  hls::stream<Header> & header_stm_out,
+                  const uint8_t alpha
+                  const uint8_t bank,
                   const uint8_t starting_sample_number,
                   hls::stream<vec_uint16_16> & packet_samples,
-                  const vec_uint16_16 * peds,
                   hls::stream<vec_int32_16> & ped_sub_results,
 				  hls::stream<vec_int32_16> & raw_pair_data) {
-
+    Header header;
+    header << header_stm_in;
+    const vec_uint16* peds = header.input_all_peds[alpha];
     ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
 
         vec_uint16_16 svec = packet_samples.read();
@@ -56,13 +60,18 @@ void ped_subtract(const uint8_t bank,
         ped_sub_results << rvec;
         raw_pair_data << rvec;
     }
+    header_stm_out << header;
 }
 
-void integrate(const int16_t base_addr,
-              hls::stream<vec_int32_16> & ped_sub_results,
-              const int16_t *bounds,
-              hls::stream<vec_int32_16> & integrals) {
-
+void integrate(hls::stream<Header> & header_stm,
+               hls::stream<Header> & header_stm_out,
+               const uint8_t alpha
+               const int16_t base_addr,
+               hls::stream<vec_int32_16> & ped_sub_results,
+               hls::stream<vec_int32_16> & integrals) {
+    Header header;
+    header << header_stm_in;
+    const int16_t bounds* = header.bounds[alpha];
     vec_int32_16 samples;
     vec_int32_16 tmp_integrals[NUM_INTEGRALS];
     // #pragma HLS ARRAY_PARTITION variable=tmp_integrals type=complete dim=1
@@ -90,11 +99,17 @@ void integrate(const int16_t base_addr,
     for (int i = 0; i < NUM_INTEGRALS; ++i) {
         integrals << tmp_integrals[i];
     }
+    header_stm_out << header;
 }
 
-void zero_suppress(hls::stream<vec_int32_16> & integrals,
-                   const int32_t * zero_thresholds,
+void zero_suppress(hls::stream<Header> & header_stm,
+                   hls::stream<Header> & header_stm_out,
+                   const uint8_t alpha
+                   hls::stream<vec_int32_16> & integrals,
                    hls::stream<vec_int32_16> & zeroed_integrals) {
+    Header header;
+    header << header_stm_in;
+    const int32_t * zero_thresholds = header.zero_thresholds[alpha];
 
     vec_int32_16 integral;
 
@@ -109,6 +124,7 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
 
         zeroed_integrals << zeroed_integral;
     }
+    header_stm_out << header;
 }
 
 void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
@@ -209,25 +225,28 @@ void write_pairs(hls::stream<vec_int32_16> pair_buffer[NUM_ALPHAS],
 
 
 void dataflow_alpha(const vec_uint16_16 * samples,
-        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
-        const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
-        const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-        hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
-        hls::stream<vec_int32_16> raw_pair_data[NUM_ALPHAS],
-		const uint8_t banks[NUM_ALPHAS],
-        const uint8_t starting_sample_numbers[NUM_ALPHAS],
-        const int16_t base_addrs[NUM_ALPHAS],
-        const uint8_t alpha
-        ) {
+                    hls::stream<Header> & header_stm_in, // contains all read-only information from the packet's header
+                    hls::stream<Header> & header_stm_out, // contains all read-only information from the packet's header
+                    hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
+                    hls::stream<vec_int32_16> raw_pair_data[NUM_ALPHAS],
+                    const uint8_t banks[NUM_ALPHAS],
+                    const uint8_t starting_sample_numbers[NUM_ALPHAS],
+                    const int16_t base_addrs[NUM_ALPHAS],
+                    const uint8_t alpha
+                    ) {
 
     #pragma HLS FUNCTION_INSTANTIATE variable=alpha
 
 	hls::stream<vec_uint16_16> packet_samples;
 	hls::stream<vec_int32_16> ped_sub_results;
 	hls::stream<vec_int32_16> integrals;
+    hls::stream<Header> header_stm_1;
+    hls::stream<Header> header_stm_2;
 	#pragma HLS STREAM variable=packet_samples depth=256
 	#pragma HLS STREAM variable=ped_sub_results depth=256
 	#pragma HLS STREAM variable=integrals depth=4
+	#pragma HLS STREAM variable=header_stm1 depth=4
+	#pragma HLS STREAM variable=header_stm2 depth=4
 
 	#pragma HLS DATAFLOW
 
@@ -235,129 +254,28 @@ void dataflow_alpha(const vec_uint16_16 * samples,
                  packet_samples);
 
 	ped_subtract(banks[alpha],
+                 header_stm_in,
+                 header_stm_1,
+                 alpha,
                  starting_sample_numbers[alpha],
                  packet_samples,
-                 input_all_peds[alpha],
                  ped_sub_results,
 				 raw_pair_data[alpha]);
 
 	integrate(base_addrs[alpha],
+              header_stm1,
+              header_stm_2,
+              alpha,
               ped_sub_results,
-              bounds[alpha],
               integrals);
 
     zero_suppress(integrals,
-                  zero_thresholds[alpha],
+                  header_stm2,
+                  header_stm_out,
+                  alpha,
                   zeroed_integrals[alpha]);
 
 }
-
-
-void dataflow(const SW_Data_Packet * input_data_packet0,
-        const SW_Data_Packet * input_data_packet1,
-        const SW_Data_Packet * input_data_packet2,
-        const SW_Data_Packet * input_data_packet3,
-        const SW_Data_Packet * input_data_packet4,
-        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
-        const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
-        const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],      // Output Result (Integrals)
-		vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY], // Output Pair Buffer
-		vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS],
-		int16_t output_num_islands,
-        uint8_t banks[NUM_ALPHAS],
-        uint8_t starting_sample_numbers[NUM_ALPHAS],
-        int16_t base_addrs[NUM_ALPHAS]
-        ) {
-
-
-    hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS];
-    hls::stream<vec_int32_16> raw_pair_data[NUM_ALPHAS]; // raw data stream to save pair data
-    static hls::stream<vec_int32_16> merged_integrals;
-    static hls::stream<vec_int32_16> island_output;
-    static hls::stream<vec_int32_16> centroiding_output;
-    hls::stream<int16_t> stream_num_islands;
-    hls::stream<Centroid> stream_centroid;
-    #pragma HLS STREAM variable=zeroed_integrals depth=4
-	#pragma HLS STREAM variable=raw_pair_data depth=4
-    #pragma HLS STREAM variable=merged_integrals depth=20
-    #pragma HLS STREAM variable=island_output depth=20
-    #pragma HLS STREAM variable=centroiding_output depth=20
-    #pragma HLS STREAM variable=stream_num_islands depth=1
-    #pragma HLS STREAM variable=stream_centroid depth=1
-
-	#pragma HLS DATAFLOW
-
-    #pragma HLS array_partition variable=input_all_peds type=complete dim=1
-    #pragma HLS array_partition variable=banks type=complete dim=1
-    #pragma HLS array_partition variable=starting_sample_numbers type=complete dim=1
-    #pragma HLS array_partition variable=base_addrs type=complete dim=1
-    #pragma HLS array_partition variable=bounds type=complete dim=1
-    #pragma HLS array_partition variable=zero_thresholds type=complete dim=1
-
-    dataflow_alpha(input_data_packet0->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-				raw_pair_data,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                0);
-    dataflow_alpha(input_data_packet1->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-				raw_pair_data,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                1);
-    dataflow_alpha(input_data_packet2->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-				raw_pair_data,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                2);
-    dataflow_alpha(input_data_packet3->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-				raw_pair_data,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                3);
-    dataflow_alpha(input_data_packet4->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-				raw_pair_data,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                4);
-
-    merge_integrals(zeroed_integrals,
-                    merged_integrals);
-
-    island_detection(merged_integrals,island_output,stream_num_islands);
-    write_islands(island_output,stream_num_islands, output_islands, output_num_islands);
-    //write_integrals(centroiding_output, output_integrals);
-    write_pairs(raw_pair_data, pair_buffer);
-    
-
-
-}
-
 
 extern "C" {
     void preprocess(
@@ -375,84 +293,173 @@ extern "C" {
 			hls::stream<int16_t> output_num_islands_stm
 	        )
     {
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet0_stm bundle=aximm1
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet1_stm bundle=aximm2
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet2_stm bundle=aximm3
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet3_stm bundle=aximm4
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet4_stm bundle=aximm5
-#pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds_stm
-// #pragma HLS array_partition variable=input_all_peds type=complete dim=1
-#pragma HLS INTERFACE mode=bram depth=1 port=bounds_stm
-#pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds_stm
-#pragma HLS INTERFACE m_axi depth=1 port=output_integrals_stm bundle=aximm6
-#pragma HLS INTERFACE m_axi depth=1 port=pair_buffer_stm bundle=aximm8
-#pragma HLS INTERFACE m_axi depth=1 port=output_islands_stm bundle=aximm9
-#pragma HLS INTERFACE m_axi depth=1 port=output_num_islands_stm bundle=aximm10
+        #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet0_stm bundle=aximm1
+        #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet1_stm bundle=aximm2
+        #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet2_stm bundle=aximm3
+        #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet3_stm bundle=aximm4
+        #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet4_stm bundle=aximm5
+        #pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds_stm
+        // #pragma HLS array_partition variable=input_all_peds type=complete dim=1
+        #pragma HLS INTERFACE mode=bram depth=1 port=bounds_stm
+        #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds_stm
+        #pragma HLS INTERFACE m_axi depth=1 port=output_integrals_stm bundle=aximm6
+        #pragma HLS INTERFACE m_axi depth=1 port=pair_buffer_stm bundle=aximm8
+        #pragma HLS INTERFACE m_axi depth=1 port=output_islands_stm bundle=aximm9
+        #pragma HLS INTERFACE m_axi depth=1 port=output_num_islands_stm bundle=aximm10
 
+        hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS];
+        hls::stream<vec_int32_16> raw_pair_data[NUM_ALPHAS]; // raw data stream to save pair data
+        static hls::stream<vec_int32_16> merged_integrals;
+        static hls::stream<vec_int32_16> island_output;
+        static hls::stream<vec_int32_16> centroiding_output;
+        hls::stream<int16_t> stream_num_islands;
+        hls::stream<Centroid> stream_centroid;
+        #pragma HLS STREAM variable=zeroed_integrals depth=4
+        #pragma HLS STREAM variable=raw_pair_data depth=4
+        #pragma HLS STREAM variable=merged_integrals depth=20
+        #pragma HLS STREAM variable=island_output depth=20
+        #pragma HLS STREAM variable=centroiding_output depth=20
+        #pragma HLS STREAM variable=stream_num_islands depth=1
+        #pragma HLS STREAM variable=stream_centroid depth=1
 
         uint8_t banks[NUM_ALPHAS];
         uint8_t starting_sample_numbers[NUM_ALPHAS];
         int16_t base_addrs[NUM_ALPHAS];
         struct SW_Data_Packet * input_data_packet0; // Read-Only Data Packet Struct
-		struct SW_Data_Packet * input_data_packet1; // Read-Only Data Packet Struct
-		struct SW_Data_Packet * input_data_packet2; // Read-Only Data Packet Struct
-		struct SW_Data_Packet * input_data_packet3; // Read-Only Data Packet Struct
-		struct SW_Data_Packet * input_data_packet4; // Read-Only Data Packet Struct
-		vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES]; // Read-Only Pedestals
-		int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS]; // Read-Only Integral Bounds
-		int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS]; // Read-Only Thresholds for zero-suppression
-		vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];       // Output Result (Integrals)
-		vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY]; // Output pair_buffers
-		vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS];
-		int16_t output_num_islands;
+        struct SW_Data_Packet * input_data_packet1; // Read-Only Data Packet Struct
+        struct SW_Data_Packet * input_data_packet2; // Read-Only Data Packet Struct
+        struct SW_Data_Packet * input_data_packet3; // Read-Only Data Packet Struct
+        struct SW_Data_Packet * input_data_packet4; // Read-Only Data Packet Struct
+        vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES]; // Read-Only Pedestals
+        int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS]; // Read-Only Integral Bounds
+        int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS]; // Read-Only Thresholds for zero-suppression
+        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];       // Output Result (Integrals)
+        vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY]; // Output pair_buffers
+        vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS];
+        int16_t output_num_islands;
+        hls::stream<Header> header_stm0i;
+        hls::stream<Header> header_stm1i;
+        hls::stream<Header> header_stm2i;
+        hls::stream<Header> header_stm3i;
+        hls::stream<Header> header_stm4i;
+        hls::stream<Header> header_stm0o;
+        hls::stream<Header> header_stm1o;
+        hls::stream<Header> header_stm2o;
+        hls::stream<Header> header_stm3o;
+        hls::stream<Header> header_stm4o;
+        Header header;
+
+        #pragma HLS STREAM variable=header_stm0i depth=1
+        #pragma HLS STREAM variable=header_stm1i depth=1
+        #pragma HLS STREAM variable=header_stm2i depth=1
+        #pragma HLS STREAM variable=header_stm3i depth=1
+        #pragma HLS STREAM variable=header_stm4i depth=1
+        #pragma HLS STREAM variable=header_stm0o depth=1
+        #pragma HLS STREAM variable=header_stm1o depth=1
+        #pragma HLS STREAM variable=header_stm2o depth=1
+        #pragma HLS STREAM variable=header_stm3o depth=1
+        #pragma HLS STREAM variable=header_stm4o depth=1
+        
+        #pragma HLS DATAFLOW
+
+        #pragma HLS array_partition variable=input_all_peds type=complete dim=1
+        #pragma HLS array_partition variable=banks type=complete dim=1
+        #pragma HLS array_partition variable=starting_sample_numbers type=complete dim=1
+        #pragma HLS array_partition variable=base_addrs type=complete dim=1
+        #pragma HLS array_partition variable=bounds type=complete dim=1
+        #pragma HLS array_partition variable=zero_thresholds type=complete dim=1
+
         while(1) {
-        	input_data_packet0_stm >> input_data_packet0;
-        	input_data_packet1_stm >> input_data_packet1;
-        	input_data_packet2_stm >> input_data_packet2;
-        	input_data_packet3_stm >> input_data_packet3;
-        	input_data_packet4_stm >> input_data_packet4;
-        	input_all_peds_stm >> input_all_peds;
-        	bounds_stm >> bounds;
-        	zero_thresholds_stm >> zero_thresholds;
-        	output_integrals_stm >> output_integrals;
-        	pair_buffer_stm >> pair_buffer;
-        	output_islands_stm >> output_islands;
-        	output_num_islands_stm >> output_num_islands;
+            input_data_packet0_stm >> input_data_packet0;
+            input_data_packet1_stm >> input_data_packet1;
+            input_data_packet2_stm >> input_data_packet2;
+            input_data_packet3_stm >> input_data_packet3;
+            input_data_packet4_stm >> input_data_packet4;
+            input_all_peds_stm >> input_all_peds;
+            bounds_stm >> bounds;
+            zero_thresholds_stm >> zero_thresholds;
+            output_integrals_stm >> output_integrals;
+            pair_buffer_stm >> pair_buffer;
+            output_islands_stm >> output_islands;
+            output_num_islands_stm >> output_num_islands;
 
+            header = Header(input_all_peds, bounds, zero_thresholds);
+            header_stm0 << header;
+            header_stm1 << header;
+            header_stm2 << header;
+            header_stm3 << header;
+            header_stm4 << header;
 
-			loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-				const SW_Data_Packet * input_data_packet;
+            loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+                const SW_Data_Packet * input_data_packet;
 
-				switch (alpha) {
-					case 0: input_data_packet = input_data_packet0; break;
-					case 1: input_data_packet = input_data_packet1; break;
-					case 2: input_data_packet = input_data_packet2; break;
-					case 3: input_data_packet = input_data_packet3; break;
-					case 4: input_data_packet = input_data_packet4; break;
-				}
+                switch (alpha) {
+                    case 0: input_data_packet = input_data_packet0; break;
+                    case 1: input_data_packet = input_data_packet1; break;
+                    case 2: input_data_packet = input_data_packet2; break;
+                    case 3: input_data_packet = input_data_packet3; break;
+                    case 4: input_data_packet = input_data_packet4; break;
+                }
 
-				read_params(input_data_packet,
-							banks[alpha],
-							starting_sample_numbers[alpha],
-							base_addrs[alpha]);
-			}
+                read_params(input_data_packet,
+                            banks[alpha],
+                            starting_sample_numbers[alpha],
+                            base_addrs[alpha]);
+            }
 
-			dataflow(input_data_packet0,
-					 input_data_packet1,
-					 input_data_packet2,
-					 input_data_packet3,
-					 input_data_packet4,
-					 input_all_peds,
-					 bounds,
-					 zero_thresholds,
-					 output_integrals,
-					 pair_buffer,
-					 output_islands,
-					 output_num_islands,
-					 banks,
-					 starting_sample_numbers,
-					 base_addrs);
+            dataflow_alpha(input_data_packet0->samples,
+                        header_stm0i,
+                        header_stm0o,
+                        zeroed_integrals,
+                        raw_pair_data,
+                        banks,
+                        starting_sample_numbers,
+                        base_addrs,
+                        0);
+            dataflow_alpha(input_data_packet1->samples,
+                        header_stm1i,
+                        header_stm1o,
+                        zeroed_integrals,
+                        raw_pair_data,
+                        banks,
+                        starting_sample_numbers,
+                        base_addrs,
+                        1);
+            dataflow_alpha(input_data_packet2->samples,
+                        header_stm2i,
+                        header_stm2o,
+                        zeroed_integrals,
+                        raw_pair_data,
+                        banks,
+                        starting_sample_numbers,
+                        base_addrs,
+                        2);
+            dataflow_alpha(input_data_packet3->samples,
+                        header_stm3i,
+                        header_stm3o,
+                        zeroed_integrals,
+                        raw_pair_data,
+                        banks,
+                        starting_sample_numbers,
+                        base_addrs,
+                        3);
+            dataflow_alpha(input_data_packet4->samples,
+                        header_stm4i,
+                        header_stm4o,
+                        zeroed_integrals,
+                        raw_pair_data,
+                        banks,
+                        starting_sample_numbers,
+                        base_addrs,
+                        4);
 
+            merge_integrals(zeroed_integrals,
+                            merged_integrals);
+
+            island_detection(merged_integrals,island_output,stream_num_islands);
+            write_islands(island_output,stream_num_islands, output_islands, output_num_islands);
+            //write_integrals(centroiding_output, output_integrals);
+            write_pairs(raw_pair_data, pair_buffer);
         }
     }
 }

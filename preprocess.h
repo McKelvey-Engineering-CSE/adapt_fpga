@@ -60,5 +60,11 @@ struct Centroid {
     int16_t count;
 };
 
+struct Header {
+    const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
+    const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
+    const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS];
+}
+
 
 #endif
