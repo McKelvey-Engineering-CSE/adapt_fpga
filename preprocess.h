@@ -17,18 +17,18 @@ typedef hls::vector<uint32_t, 16> vec_uint32_16;
 
 extern "C" {
     void preprocess(
-	        const struct SW_Data_Packet * input_data_packet0, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet1, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet2, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet3, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet4, // Read-Only Data Packet Struct
-	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
-            const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
-            const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-	        vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY], // Output pair_buffers
-			vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS],
-			int16_t output_num_islands
+	        hls::stream<struct SW_Data_Packet> input_data_packet0, // Read-Only Data Packet Struct
+	        hls::stream<struct SW_Data_Packet> input_data_packet1, // Read-Only Data Packet Struct
+	        hls::stream<struct SW_Data_Packet> input_data_packet2, // Read-Only Data Packet Struct
+	        hls::stream<struct SW_Data_Packet> input_data_packet3, // Read-Only Data Packet Struct
+	        hls::stream<struct SW_Data_Packet> input_data_packet4, // Read-Only Data Packet Struct
+	        hls::stream<vec_uint16_16[NUM_ALPHAS][2*NUM_SAMPLES]> input_all_peds, // Read-Only Pedestals
+            hls::stream<int16_t[NUM_ALPHAS][2*NUM_INTEGRALS]> bounds, // Read-Only Integral Bounds
+            hls::stream<int32_t[NUM_ALPHAS][NUM_INTEGRALS]> zero_thresholds, // Read-Only Thresholds for zero-suppression
+	        hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_integrals,       // Output Result (Integrals)
+	        hls::stream<vec_int32_16[NUM_ALPHAS][PAIR_HISTORY]> pair_buffer, // Output pair_buffers
+			hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_islands,
+			hls::stream<int16_t> output_num_islands
 	);
 }
 
@@ -61,10 +61,12 @@ struct Centroid {
 };
 
 struct Header {
-    const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
-    const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
-    const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS];
-}
+    vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
+    int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
+    int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS];
+    Header(vec_uint16_16[NUM_ALPHAS][2*NUM_SAMPLES], int16_t[NUM_ALPHAS][2*NUM_INTEGRALS], int32_t[NUM_ALPHAS][NUM_INTEGRALS]);
+    Header();
+};
 
 
 #endif

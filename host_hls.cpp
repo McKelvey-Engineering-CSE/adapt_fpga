@@ -199,9 +199,9 @@ int main()
 {
         printf("Beginning of main\n");
     hls::stream<SW_Data_Packet> input_data_packet[NUM_ALPHAS];
-    hls::stream<vec_uint16_16> input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
-    hls::stream<int16_t> bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
-    hls::stream<vec_int32_16> output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
+    hls::stream<vec_uint16_16[NUM_ALPHAS][2*NUM_SAMPLES]> input_all_peds;
+    hls::stream<int16_t[NUM_ALPHAS][2*NUM_INTEGRALS]> bounds;
+    hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_integrals;
     hls::stream<vec_int32_16[NUM_ALPHAS][PAIR_HISTORY]> pair_buffer;
     hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_islands;
     hls::stream<int16_t> output_num_islands;
@@ -234,11 +234,11 @@ int main()
 			 zero_thresholds[a][3] << 5;
 		}
     }
-    preprocess( &input_data_packet[0],
-                &input_data_packet[1],
-                &input_data_packet[2],
-                &input_data_packet[3],
-                &input_data_packet[4],
+    preprocess( input_data_packet[0],
+                input_data_packet[1],
+                input_data_packet[2],
+                input_data_packet[3],
+                input_data_packet[4],
                 input_all_peds,
                 bounds,
                 zero_thresholds,
