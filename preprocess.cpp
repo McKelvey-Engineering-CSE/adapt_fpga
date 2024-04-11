@@ -310,10 +310,10 @@ extern "C" {
 	        hls::stream<struct SW_Data_Packet> input_data_packet2_stm, // Read-Only Data Packet Struct
 	        hls::stream<struct SW_Data_Packet> input_data_packet3_stm, // Read-Only Data Packet Struct
 	        hls::stream<struct SW_Data_Packet> input_data_packet4_stm, // Read-Only Data Packet Struct
-			hls::stream<vec_uint16_16[NUM_ALPHAS][2*NUM_SAMPLES]> input_all_peds_stm, // Read-Only Pedestals
-            hls::stream<int16_t[NUM_ALPHAS][2*NUM_INTEGRALS]> bounds_stm, // Read-Only Integral Bounds
-            hls::stream<int32_t[NUM_ALPHAS][NUM_INTEGRALS]> zero_thresholds_stm, // Read-Only Thresholds for zero-suppression
-			hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_integrals_stm,       // Output Result (Integrals)
+			vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
+            int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+            int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
+			vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
 			hls::stream<vec_int32_16[NUM_ALPHAS][PAIR_HISTORY]> pair_buffer_stm, // Output pair_buffers
 			hls::stream<vec_int32_16[NUM_ALPHAS][NUM_INTEGRALS]> output_islands_stm,
 			hls::stream<int16_t> output_num_islands_stm
@@ -324,11 +324,11 @@ extern "C" {
         #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet2_stm bundle=aximm3
         #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet3_stm bundle=aximm4
         #pragma HLS INTERFACE m_axi depth=1 port=input_data_packet4_stm bundle=aximm5
-        #pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds_stm
+        #pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds
         // #pragma HLS array_partition variable=input_all_peds type=complete dim=1
-        #pragma HLS INTERFACE mode=bram depth=1 port=bounds_stm
-        #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds_stm
-        #pragma HLS INTERFACE m_axi depth=1 port=output_integrals_stm bundle=aximm6
+        #pragma HLS INTERFACE mode=bram depth=1 port=bounds
+        #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
+        #pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm6
         #pragma HLS INTERFACE m_axi depth=1 port=pair_buffer_stm bundle=aximm8
         #pragma HLS INTERFACE m_axi depth=1 port=output_islands_stm bundle=aximm9
         #pragma HLS INTERFACE m_axi depth=1 port=output_num_islands_stm bundle=aximm10
@@ -356,10 +356,10 @@ extern "C" {
         SW_Data_Packet input_data_packet2; // Read-Only Data Packet Struct
         SW_Data_Packet input_data_packet3; // Read-Only Data Packet Struct
         SW_Data_Packet input_data_packet4; // Read-Only Data Packet Struct
-        vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES]; // Read-Only Pedestals
-        int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS]; // Read-Only Integral Bounds
-        int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS]; // Read-Only Thresholds for zero-suppression
-        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];       // Output Result (Integrals)
+        // vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES]; // Read-Only Pedestals
+        // int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS]; // Read-Only Integral Bounds
+        // int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS]; // Read-Only Thresholds for zero-suppression
+        // vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];       // Output Result (Integrals)
         vec_int32_16 pair_buffer[NUM_ALPHAS][PAIR_HISTORY]; // Output pair_buffers
         vec_int32_16 output_islands[NUM_ALPHAS][NUM_INTEGRALS];
         int16_t output_num_islands;
@@ -401,11 +401,10 @@ extern "C" {
             input_data_packet2_stm >> input_data_packet2;
             input_data_packet3_stm >> input_data_packet3;
             input_data_packet4_stm >> input_data_packet4;
-            input_all_peds_stm >> input_all_peds;
-            bounds_stm >> bounds;
-            zero_thresholds_stm >> zero_thresholds;
-            output_integrals_stm >> output_integrals;
-            pair_buffer_stm >> pair_buffer;
+            // input_all_peds_stm >> input_all_peds;
+            // bounds_stm >> bounds;
+            // zero_thresholds_stm >> zero_thresholds;
+            // output_integrals_stm >> output_integrals;
             output_islands_stm >> output_islands;
             output_num_islands_stm >> output_num_islands;
 
@@ -486,6 +485,7 @@ extern "C" {
             write_islands(island_output,stream_num_islands, output_islands, output_num_islands);
             //write_integrals(centroiding_output, output_integrals);
             write_pairs(raw_pair_data, pair_buffer);
+            pair_buffer_stm << pair_buffer;
         }
     }
 }
