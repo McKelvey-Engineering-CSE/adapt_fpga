@@ -11,82 +11,165 @@
 #include "preprocess.h"
 
 
-void read_params(const SW_Data_Packet* data_packet,
-                 uint8_t &bank,
-                 uint8_t &starting_sample_number,
-                 int16_t &base_addr) {
-	bank = data_packet->bank;
-    starting_sample_number = data_packet->starting_sample_number;
-    base_addr = data_packet->fine_time - data_packet->starting_sample_number;
-    base_addr = (base_addr < 0) ? base_addr + NUM_SAMPLES : base_addr;
-}
+void read_packet(hls::stream<uint16_t> & alpha_words,
+                 hls::stream<Header> & packet_headers,
+                 hls::stream<vec_uint16_16> & packet_samples) {
 
-static void read_samples(const vec_uint16_16 * samples,
-                         hls::stream<vec_uint16_16>& packet_samples) {
-    read_samples_loop: for (int i = 0; i < NUM_SAMPLES; i++) {
-        vec_uint16_16 sample = samples[i];
-        packet_samples << sample;
-    }
-}
+    PACKET_STATE state = STATE_START;
+    Header header;
+    uint8_t c;
+    uint16_t sample_count;
+    vec_uint16_16 sample;
 
+    while (1) {
 
-void ped_subtract(const uint8_t bank,
-                  const uint8_t starting_sample_number,
-                  hls::stream<vec_uint16_16> & packet_samples,
-                  const vec_uint16_16 * peds,
-                  hls::stream<vec_int32_16> & ped_sub_results) {
+        uint16_t word = alpha_words.read();
+        switch(state) {
+            case STATE_START:
+                state = (word == 0xA1FA) ? STATE_ADDR : STATE_START;
+                c = 0;
+                sample_count = 0;
+                continue;
 
-    ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
+            case STATE_ADDR:
+                header.i2c_address = 0b111 & (word >> 13);
+                header.conf_address = 0b1111 & (word >> 9);
+                header.bank = 0b1 & (word >> 8);
+                header.fine_time = 0xff & word;
+                state = STATE_TIME1;
+                continue;
 
-        vec_uint16_16 svec = packet_samples.read();
+            case STATE_TIME1:
+                header.coarse_time = (((uint32_t) word) << 16);
+                state = STATE_TIME2;
+                continue;
 
-        // calculate base address for integral        
-        const uint16_t idx = (starting_sample_number + s) % NUM_SAMPLES;        
-        vec_uint16_16 pvec = peds[bank * NUM_SAMPLES + idx];
-        
-        vec_int32_16 rvec;
-        
-        ped_channel: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-            uint16_t s = svec[c];
-            uint16_t p = pvec[c];
-            int32_t r = (int32_t) s - (int32_t) p;
-            rvec[c] = r;
+            case STATE_TIME2:
+                header.coarse_time = header.coarse_time & (((uint32_t) word) & 0xffff);
+                state = STATE_TRIGGERNUM;
+                continue;
+
+            case STATE_TRIGGERNUM:
+                header.trigger_number = word;
+                state = STATE_SAMPLESAFTERTRIG;
+                continue;
+
+            case STATE_SAMPLESAFTERTRIG:
+                header.samples_after_trigger = (word >> 8) & 0xff;
+                header.look_back_samples = word & 0xff;
+                state = STATE_SAMPLESTOREAD;
+                continue;
+
+            case STATE_SAMPLESTOREAD:
+                header.samples_to_be_read = (word >> 8) & 0xff;
+                header.starting_sample_number = word & 0xff;
+                state = STATE_MISSEDTRIGGERS;
+                continue;
+
+            case STATE_MISSEDTRIGGERS:
+                header.number_of_missed_triggers = (word >> 8) & 0xff;
+                header.state_machine_status = word & 0xff;
+                state = STATE_READING;
+                continue;
+
+            case STATE_READING:
+                sample[c] = word & 0xfff; // 1024
+                if (c == NUM_CHANNELS - 1) {
+                    c = 0;
+                    packet_samples << sample;
+                }
+                else {
+                    ++c;
+                }
+                if (sample_count == NUM_CHANNELS * NUM_SAMPLES - 1) {
+                    sample_count = 0;
+                    packet_headers << header;
+                    state = STATE_END;
+                }
+                else {
+                    ++sample_count;
+                }
+                continue;
+
+            case STATE_END:
+                state = (word == 0X0E6A) ? STATE_START : STATE_END;
+                continue;
+
         }
-        ped_sub_results << rvec;
+    }
+
+}
+
+
+void ped_subtract(hls::stream<Header> & headers_in,
+                  hls::stream<Header> & headers_out,
+                  hls::stream<vec_uint16_16> & samples_in,
+                  hls::stream<vec_int32_16> & ped_sub_results,
+                  const vec_uint16_16 * peds) {
+
+    
+
+    while (1) {
+        Header header = headers_in.read();
+        headers_out << header;
+
+        ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
+            vec_uint16_16 svec = samples_in.read();
+
+            // calculate base address for integral 
+            const uint16_t idx = (header.starting_sample_number + s) % NUM_SAMPLES;
+            vec_uint16_16 pvec = peds[header.bank * NUM_SAMPLES + idx];
+
+            vec_int32_16 rvec;
+            
+            ped_channel: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+                uint16_t s = svec[c];
+                uint16_t p = pvec[c];
+                int32_t r = (int32_t) s - (int32_t) p;
+                rvec[c] = r;
+            }
+            ped_sub_results << rvec;
+        }
     }
 }
 
-void integrate(const int16_t base_addr,
-              hls::stream<vec_int32_16> & ped_sub_results,
-              const int16_t *bounds,
-              hls::stream<vec_int32_16> & integrals) {
+void integrate(hls::stream<Header> & headers_in,
+               hls::stream<vec_int32_16> & ped_sub_results,
+               const int16_t *bounds,
+               hls::stream<vec_int32_16> & integrals) {
 
-    vec_int32_16 samples;
-    vec_int32_16 tmp_integrals[NUM_INTEGRALS];
-    // #pragma HLS ARRAY_PARTITION variable=tmp_integrals type=complete dim=1
+    while (1) {
+        Header header = headers_in.read();
 
-    int_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
+        uint16_t base_addr = header.fine_time - header.starting_sample_number;
+        base_addr = (base_addr < 0) ? base_addr + NUM_SAMPLES : base_addr;
 
-        samples = ped_sub_results.read();
+        vec_int32_16 samples;
+        vec_int32_16 tmp_integrals[NUM_INTEGRALS];
 
-        int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-            #pragma HLS UNROLL factor=4
-            const int16_t start = bounds[2*i];
-            const int16_t end = bounds[2*i+1];
-            vec_int32_16 current_integral = (s == 0) ? 0 : tmp_integrals[i];
-        
-            const int16_t x = s - base_addr;
-            current_integral =
-                ((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) ?
-                current_integral + samples :
-                current_integral;
-            tmp_integrals[i] = current_integral;
+        int_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
 
+            samples = ped_sub_results.read();
+
+            int_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+                #pragma HLS UNROLL factor=4
+                const int16_t start = bounds[2*i];
+                const int16_t end = bounds[2*i+1];
+                vec_int32_16 current_integral = (s == 0) ? 0 : tmp_integrals[i];
+            
+                const int16_t x = s - base_addr;
+                current_integral =
+                    ((x >= start && x <= end) || (x - NUM_SAMPLES) >= start) ?
+                    current_integral + samples :
+                    current_integral;
+                tmp_integrals[i] = current_integral;
+
+            }
         }
-    }
 
-    for (int i = 0; i < NUM_INTEGRALS; ++i) {
-        integrals << tmp_integrals[i];
+        for (int i = 0; i < NUM_INTEGRALS; ++i) {
+            integrals << tmp_integrals[i];
+        }
     }
 }
 
@@ -94,29 +177,36 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
                    const int32_t * zero_thresholds,
                    hls::stream<vec_int32_16> & zeroed_integrals) {
 
-    vec_int32_16 integral;
+    while (1) {
 
-    zero_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-        integral = integrals.read();
-        const int32_t threshold = zero_thresholds[i];
-        vec_int32_16 zeroed_integral;
+        vec_int32_16 integral;
 
-        zero_channels: for(uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-            zeroed_integral[c] = (integral[c] < threshold) ? 0 : integral[c];
+        zero_integrals: for(uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+            integral = integrals.read();
+            const int32_t threshold = zero_thresholds[i];
+            vec_int32_16 zeroed_integral;
+
+            zero_channels: for(uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+                zeroed_integral[c] = (integral[c] < threshold) ? 0 : integral[c];
+            }
+
+            zeroed_integrals << zeroed_integral;
         }
 
-        zeroed_integrals << zeroed_integral;
     }
 }
 
 void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
                      hls::stream<vec_int32_16> & merged_integrals) {
-    vec_int32_16 current;
-    for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-        for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-            current = zeroed_integrals[alpha].read();
-            merged_integrals << current;
 
+    while (1) {
+        vec_int32_16 current;
+        for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+            for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+                current = zeroed_integrals[alpha].read();
+                merged_integrals << current;
+
+            }
         }
     }
 }
@@ -215,38 +305,38 @@ void write_centroid(hls::stream<Centroid> & stream_centroid,
     *centroid = local_centroid;
 }
 
-void dataflow_alpha(const vec_uint16_16 * samples,
+void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
         const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
         const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
         hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
-		const uint8_t banks[NUM_ALPHAS],
-        const uint8_t starting_sample_numbers[NUM_ALPHAS],
-        const int16_t base_addrs[NUM_ALPHAS],
         const uint8_t alpha
         ) {
 
     #pragma HLS FUNCTION_INSTANTIATE variable=alpha
 
+    hls::stream<Header> headers_ped;
+    hls::stream<Header> headers_integrate;
 	hls::stream<vec_uint16_16> packet_samples;
 	hls::stream<vec_int32_16> ped_sub_results;
 	hls::stream<vec_int32_16> integrals;
+	#pragma HLS STREAM variable=headers_ped depth=1
+	#pragma HLS STREAM variable=headers_integrate depth=1
 	#pragma HLS STREAM variable=packet_samples depth=256
 	#pragma HLS STREAM variable=ped_sub_results depth=256
 	#pragma HLS STREAM variable=integrals depth=4
 
 	#pragma HLS DATAFLOW
 
-	read_samples(samples,
-                 packet_samples);
+    read_packet(input_alpha, headers_ped, packet_samples);
 
-	ped_subtract(banks[alpha],
-                 starting_sample_numbers[alpha],
+	ped_subtract(headers_ped,
+                 headers_integrate,
                  packet_samples,
-                 input_all_peds[alpha],
-                 ped_sub_results);
+                 ped_sub_results,                 
+                 input_all_peds[alpha]);
 
-	integrate(base_addrs[alpha],
+	integrate(headers_integrate,
               ped_sub_results,
               bounds[alpha],
               integrals);
@@ -258,19 +348,16 @@ void dataflow_alpha(const vec_uint16_16 * samples,
 }
 
 
-void dataflow(const SW_Data_Packet * input_data_packet0,
-        const SW_Data_Packet * input_data_packet1,
-        const SW_Data_Packet * input_data_packet2,
-        const SW_Data_Packet * input_data_packet3,
-        const SW_Data_Packet * input_data_packet4,
+void dataflow(hls::stream<uint16_t> & input_alpha0,
+              hls::stream<uint16_t> & input_alpha1,
+              hls::stream<uint16_t> & input_alpha2,
+              hls::stream<uint16_t> & input_alpha3,
+              hls::stream<uint16_t> & input_alpha4,
         const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
         const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
         vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],      // Output Result (Integrals)
-        struct Centroid * centroid, // Output Centroid
-        uint8_t banks[NUM_ALPHAS],
-        uint8_t starting_sample_numbers[NUM_ALPHAS],
-        int16_t base_addrs[NUM_ALPHAS]
+        struct Centroid * centroid // Output Centroid
         ) {
 
 
@@ -290,57 +377,14 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
 	#pragma HLS DATAFLOW
 
     #pragma HLS array_partition variable=input_all_peds type=complete dim=1
-    #pragma HLS array_partition variable=banks type=complete dim=1
-    #pragma HLS array_partition variable=starting_sample_numbers type=complete dim=1
-    #pragma HLS array_partition variable=base_addrs type=complete dim=1
     #pragma HLS array_partition variable=bounds type=complete dim=1
     #pragma HLS array_partition variable=zero_thresholds type=complete dim=1
 
-    dataflow_alpha(input_data_packet0->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                0);
-    dataflow_alpha(input_data_packet1->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                1);
-    dataflow_alpha(input_data_packet2->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                2);
-    dataflow_alpha(input_data_packet3->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                3);
-    dataflow_alpha(input_data_packet4->samples,
-                input_all_peds,
-                bounds,
-                zero_thresholds,
-                zeroed_integrals,
-                banks,
-                starting_sample_numbers,
-                base_addrs,
-                4);
+    DATAFLOW_ALPHA(0);
+    DATAFLOW_ALPHA(1);
+    DATAFLOW_ALPHA(2);
+    DATAFLOW_ALPHA(3);
+    DATAFLOW_ALPHA(4);
 
     merge_integrals(zeroed_integrals,
                     merged_integrals);
@@ -357,11 +401,11 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
 
 extern "C" {
     void preprocess(
-	        const struct SW_Data_Packet * input_data_packet0, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet1, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet2, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet3, // Read-Only Data Packet Struct
-	        const struct SW_Data_Packet * input_data_packet4, // Read-Only Data Packet Struct
+	        hls::stream<uint16_t> & input_alpha0,
+            hls::stream<uint16_t> & input_alpha1,
+            hls::stream<uint16_t> & input_alpha2,
+            hls::stream<uint16_t> & input_alpha3,
+            hls::stream<uint16_t> & input_alpha4,
 	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
             const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
@@ -369,53 +413,29 @@ extern "C" {
             struct Centroid *centroid // Output Centroid
 	        )
     {
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet0 bundle=aximm1
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet1 bundle=aximm2
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet2 bundle=aximm3
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet3 bundle=aximm4
-#pragma HLS INTERFACE m_axi depth=1 port=input_data_packet4 bundle=aximm5
+#pragma HLS INTERFACE axis depth=1 port=input_alpha0
+#pragma HLS INTERFACE axis depth=1 port=input_alpha1
+#pragma HLS INTERFACE axis depth=1 port=input_alpha2
+#pragma HLS INTERFACE axis depth=1 port=input_alpha3
+#pragma HLS INTERFACE axis depth=1 port=input_alpha4
 #pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds
 // #pragma HLS array_partition variable=input_all_peds type=complete dim=1
 #pragma HLS INTERFACE mode=bram depth=1 port=bounds
 #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
-#pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm6
-#pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm7
+#pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm1
+#pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm2
 
 
-        uint8_t banks[NUM_ALPHAS];
-        uint8_t starting_sample_numbers[NUM_ALPHAS];
-        int16_t base_addrs[NUM_ALPHAS];
-
-        loop_alphas: for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
-            const SW_Data_Packet * input_data_packet;
-
-            switch (alpha) {
-                case 0: input_data_packet = input_data_packet0; break;
-                case 1: input_data_packet = input_data_packet1; break;
-                case 2: input_data_packet = input_data_packet2; break;
-                case 3: input_data_packet = input_data_packet3; break;
-                case 4: input_data_packet = input_data_packet4; break;
-            }
-
-            read_params(input_data_packet,
-                        banks[alpha],
-                        starting_sample_numbers[alpha],
-                        base_addrs[alpha]);
-        }
-
-        dataflow(input_data_packet0,
-                 input_data_packet1,
-                 input_data_packet2,
-                 input_data_packet3,
-                 input_data_packet4,
+        dataflow(input_alpha0,
+                 input_alpha1,
+                 input_alpha2,
+                 input_alpha3,
+                 input_alpha4,
                  input_all_peds,
                  bounds,
                  zero_thresholds,
                  output_integrals,
-                 centroid,
-                 banks,
-                 starting_sample_numbers,
-                 base_addrs);
+                 centroid);
 
 
     }
