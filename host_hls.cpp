@@ -229,6 +229,13 @@ int main()
          zero_thresholds[a][3] = 5;
     }
 
+    hls::stream<uint16_t> input_alphas[NUM_ALPHAS];
+    //Loop over each ALPHA and each input stream to push
+    //data from corresponding input_data_packet
+
+    //Alternative would be to directly read the bit specification from
+    //EventStream.dat and push 16-bit words one-by-one into the streams
+
     preprocess( &input_data_packet[0],
                 &input_data_packet[1],
                 &input_data_packet[2],
