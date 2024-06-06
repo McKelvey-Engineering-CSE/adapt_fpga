@@ -215,34 +215,37 @@ void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
 void island_detection(hls::stream<vec_int32_16> & merged_integrals,
                          hls::stream<vec_int32_16> & island_output,
                          hls::stream<int16_t> & stream_num_islands) {
-    bool in_island_tmp;
-    int16_t num_islands_tmp;
-    vec_int32_16 integral;
-    island_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-        island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-            integral = merged_integrals.read();
 
-            if (i == INTEGRAL_NUM) {
+    while(1) {
+        bool in_island_tmp;
+        int16_t num_islands_tmp;
+        vec_int32_16 integral;
+        island_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+            island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+                integral = merged_integrals.read();
 
-                island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-                    bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
-                    int16_t num_islands = (a == 0 && c == 0) ? 0 : num_islands_tmp;
-                    if(integral[c] && !in_island) {
-                        in_island = true;
-                        ++num_islands;
+                if (i == INTEGRAL_NUM) {
+
+                    island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+                        bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
+                        int16_t num_islands = (a == 0 && c == 0) ? 0 : num_islands_tmp;
+                        if(integral[c] && !in_island) {
+                            in_island = true;
+                            ++num_islands;
+                        }
+                        else if (!integral[c] && in_island) {
+                            in_island = false;
+                        }
+                        in_island_tmp = in_island;
+                        num_islands_tmp = num_islands;
                     }
-                    else if (!integral[c] && in_island) {
-                        in_island = false;
-                    }
-                    in_island_tmp = in_island;
-                    num_islands_tmp = num_islands;
                 }
-            }
 
-            island_output << integral;
+                island_output << integral;
+            }
+            if (i == INTEGRAL_NUM)
+                stream_num_islands << num_islands_tmp;
         }
-        if (i == INTEGRAL_NUM)
-            stream_num_islands << num_islands_tmp;
     }
 
 }
@@ -251,34 +254,37 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
                  hls::stream<int16_t> & stream_num_islands,
                  hls::stream<vec_int32_16> & centroiding_output,
                  hls::stream<Centroid> & stream_centroid) {
-    uint16_t position_tmp;
-    uint16_t signal_tmp;  
-    vec_int32_16 integral;
-    Centroid centroid;
-    centroiding_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-        centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-            integral = island_output.read();
+    
+    while(1) {
+        uint16_t position_tmp;
+        uint16_t signal_tmp;  
+        vec_int32_16 integral;
+        Centroid centroid;
+        centroiding_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+            centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+                integral = island_output.read();
 
-            if (i == INTEGRAL_NUM) {
+                if (i == INTEGRAL_NUM) {
 
-                centroiding_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-                    uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
-                    uint16_t signal = (a == 0 && c == 0) ? 0 : signal_tmp;
-                    const uint16_t pos = a * NUM_CHANNELS + c;
-                    position += pos * integral[c];
-                    signal += integral[c];
-                    position_tmp = position;
-                    signal_tmp = signal;
+                    centroiding_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+                        uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
+                        uint16_t signal = (a == 0 && c == 0) ? 0 : signal_tmp;
+                        const uint16_t pos = a * NUM_CHANNELS + c;
+                        position += pos * integral[c];
+                        signal += integral[c];
+                        position_tmp = position;
+                        signal_tmp = signal;
+                    }
                 }
-            }
 
-            centroiding_output << integral;
-        }
-        if (i == INTEGRAL_NUM) {
-            centroid.count = stream_num_islands.read();        
-            centroid.position = (centroid.count > 0) ? position_tmp / signal_tmp : 0;
-            centroid.signal = (centroid.count > 0) ? signal_tmp : 0;
-            stream_centroid << centroid;
+                centroiding_output << integral;
+            }
+            if (i == INTEGRAL_NUM) {
+                centroid.count = stream_num_islands.read();        
+                centroid.position = (centroid.count > 0) ? position_tmp / signal_tmp : 0;
+                centroid.signal = (centroid.count > 0) ? signal_tmp : 0;
+                stream_centroid << centroid;
+            }
         }
     }
 }
@@ -286,23 +292,27 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
 void write_integrals(hls::stream<vec_int32_16> & centroiding_output,
                      vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS]) {
     
-    // printf("Writing integrals\n");
-    vec_int32_16 current;
-    write_integrals_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
-        // printf("Integral.\n");
-        write_integrals_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-            current = centroiding_output.read();
-            output_integrals[a][i] = current;
+    while(1) {
+        // printf("Writing integrals\n");
+        vec_int32_16 current;
+        write_integrals_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
             // printf("Integral.\n");
+            write_integrals_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+                current = centroiding_output.read();
+                output_integrals[a][i] = current;
+                // printf("Integral.\n");
+            }
         }
     }
 }
 
 void write_centroid(hls::stream<Centroid> & stream_centroid,
                     Centroid * centroid) {
-    Centroid local_centroid;
-    local_centroid = stream_centroid.read();   
-    *centroid = local_centroid;
+    while(1) {
+        Centroid local_centroid;
+        local_centroid = stream_centroid.read();   
+        *centroid = local_centroid;
+    }
 }
 
 void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
