@@ -136,7 +136,6 @@ void ped_subtract(hls::stream<Header> & headers_in,
 
 void integrate(hls::stream<Header> & headers_in,
                hls::stream<Header> & headers_out,
-               hls::stream<Header> & headers_in,
                hls::stream<vec_int32_16> & ped_sub_results,
                const int16_t *bounds,
                hls::stream<vec_int32_16> & integrals) {
@@ -181,8 +180,8 @@ void adc_conversion(hls::stream<Header> & headers_in,
                     hls::stream<Header> & headers_out,
                     hls::stream<vec_int32_16> & integrals,
                     hls::stream<vec_int32_16> & adc_converted_integrals,
-                    const ap_fixed<16, 8> g[NUM_ALPHAS][NUM_CHANNELS], 
-                    const int32_t dc[NUM_ALPHAS][NUM_CHANNELS],
+                    const ap_fixed<16, 8> * g, 
+                    const int32_t * dc,
                     const uint8_t alpha_index) {
 
     while (1) {
@@ -349,6 +348,7 @@ void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
     hls::stream<Header> headers_ped;
     hls::stream<Header> headers_integrate;
     hls::stream<Header> headers_adc;
+    hls::stream<Header> headers_zero;
     hls::stream<vec_uint16_16> packet_samples;
     hls::stream<vec_int32_16> ped_sub_results;
     hls::stream<vec_int32_16> integrals;
@@ -356,6 +356,7 @@ void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
     #pragma HLS STREAM variable=headers_ped depth=1
     #pragma HLS STREAM variable=headers_integrate depth=1
     #pragma HLS STREAM variable=headers_adc depth=1
+    #pragma HLS STREAM variable=headers_zero depth=1
     #pragma HLS STREAM variable=packet_samples depth=256
     #pragma HLS STREAM variable=ped_sub_results depth=256
     #pragma HLS STREAM variable=integrals depth=4
@@ -378,14 +379,15 @@ void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
               integrals);
 
     adc_conversion(headers_adc,
-                   headers_ped,
+                   headers_zero,
                    integrals,
                    adc_converted_integrals,
                    g[alpha],
                    dc[alpha],
                    alpha);
 
-    zero_suppress(adc_converted_integrals,
+    zero_suppress(headers_zero,
+                  adc_converted_integrals,
                   zero_thresholds[alpha],
                   zeroed_integrals[alpha]);
 
@@ -401,7 +403,9 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
         const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
         vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],      // Output Result (Integrals)
-        struct Centroid * centroid // Output Centroid
+        struct Centroid * centroid, // Output Centroid
+        const ap_fixed<16,8> g[NUM_ALPHAS][NUM_CHANNELS],
+        const int32_t dc[NUM_ALPHAS][NUM_CHANNELS]
         ) {
 
 
@@ -423,6 +427,8 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
     #pragma HLS array_partition variable=input_all_peds type=complete dim=1
     #pragma HLS array_partition variable=bounds type=complete dim=1
     #pragma HLS array_partition variable=zero_thresholds type=complete dim=1
+    #pragma HLS array_partition variable=g type=complete dim=1
+    #pragma HLS array_partition variable=dc type=complete dim=1
 
     DATAFLOW_ALPHA(0);
     DATAFLOW_ALPHA(1);
@@ -454,7 +460,7 @@ extern "C" {
             const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-            struct Centroid *centroid // Output Centroid
+            struct Centroid *centroid, // Output Centroid
             const ap_fixed<16, 8> g[NUM_ALPHAS][NUM_CHANNELS], // Gain values
             const int32_t dc[NUM_ALPHAS][NUM_CHANNELS]  // DC offset values
 	        )
@@ -474,12 +480,6 @@ extern "C" {
 #pragma HLS INTERFACE mode=bram depth=1 port=dc
 
 
-        hls::stream<vec_int32_16> zeroed_samples;
-        hls::stream<vec_int32_16> adc_converted_integrals;
-
-        #pragma HLS STREAM variable=zeroed_samples depth=1
-        #pragma HLS STREAM variable=adc_converted_integrals depth=1
-
         dataflow(input_alpha0,
                  input_alpha1,
                  input_alpha2,
@@ -488,10 +488,11 @@ extern "C" {
                  input_all_peds,
                  bounds,
                  zero_thresholds,
-                 zeroed_samples,
-                 adc_converted_integrals,
                  output_integrals,
-                 centroid);
+                 centroid,
+                 g,
+                 dc);
 
     }
 }
+
