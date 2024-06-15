@@ -26,8 +26,10 @@ extern "C" {
             const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-            struct Centroid *centroid // Output Centroid
-    );
+            struct Centroid *centroid, // Output Centroid
+            const ap_fixed<16, 8> g[NUM_ALPHAS][NUM_CHANNELS], // Gain values
+            const int32_t dc[NUM_ALPHAS][NUM_CHANNELS]  // DC offset values
+	        );
 }
 
 /*
@@ -87,8 +89,11 @@ struct Centroid {
                             input_all_peds, \
                             bounds, \
                             zero_thresholds, \
+                            g, \
+                            dc, \
                             zeroed_integrals, \
-                            index)
+                            index \
+                            )
 
 
 #endif
