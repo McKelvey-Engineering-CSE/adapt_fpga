@@ -83,6 +83,51 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
     return 0;
 }
 
+// Read bit from file -> every 16 bits -> encode of binary prepresentation of data
+// reference to hls stream
+int data_packet_dat_to_stream(int fd, struct SW_Data_Packet * data_packet){
+
+    // Read data into a larger buffer and then strip 
+    // all of the spaces because dat files are bit-space-delineated.
+
+    // The times two is to account for the space-delineation
+    int num_bits = BUF_SIZE * 16 * 2;
+    uint8_t og_buf[num_bits];
+
+    if (read(fd, og_buf, num_bits) == -1) {
+        perror("read");
+    }
+
+    for (int i = 0; i < num_bits; i++) {
+        og_buf[i] = og_buf[i] - 0x30; // 0 in ASCII
+    }
+
+    uint16_t buf[BUF_SIZE];
+    uint8_t ms_half, ls_half;
+    int base = 0;
+    for (int i = 0; i < BUF_SIZE; i++) {
+        base = i * 32;
+        ms_half = (og_buf[base] << 7) | (og_buf[base + 2] << 6) | (og_buf[base + 4] << 5) | (og_buf[base + 6] << 4) | (og_buf[base + 8] << 3) | (og_buf[base + 10] << 2) | (og_buf[base + 12] << 1) | og_buf[base + 14];
+        ls_half = (og_buf[base + 16] << 7) | (og_buf[base + 18] << 6) | (og_buf[base + 20] << 5) | (og_buf[base + 22] << 4) | (og_buf[base + 24] << 3) | (og_buf[base + 26] << 2) | (og_buf[base + 28] << 1) | og_buf[base + 30];
+        buf[i] = (ms_half << 8) | ls_half;
+    }
+
+    // First short should be 0xA1FA
+    if (buf[0] != 0xa1fa) {
+        printf("File must start with word 0xA1FA.\n");
+        return -2;
+    }
+
+    for (int buf_idx=0; buf_idx < BUF_SIZE; buf_idx++){
+        for (int alpha_idx=0; alpha_idx < NUM_ALPHAS; alpha_idx++){
+            input_alpha[alpha_idx] << buf[buf_idx];
+        }
+    }
+
+
+    return 0;
+}
+
 int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
     FILE * fp = fdopen(fd, "r");
     if(fp == NULL) {
@@ -195,8 +240,15 @@ int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data
 // ------------------------------------------------------------------------------------
 int main()
 {
-        printf("Beginning of main\n");
+    printf("Beginning of main\n");
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
+    hls::stream<uint16_t> & input_alpha[NUM_ALPHAS];
+    // hls::stream<uint16_t> & input_alpha0,
+    // hls::stream<uint16_t> & input_alpha1,
+    // hls::stream<uint16_t> & input_alpha2,
+    // hls::stream<uint16_t> & input_alpha3,
+    // hls::stream<uint16_t> & input_alpha4,
+
     vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
     int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
     vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
