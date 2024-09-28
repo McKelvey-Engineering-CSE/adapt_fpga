@@ -2,6 +2,9 @@
 #define PREPROCESS_H
 
 #include <hls_vector.h>
+#include <hls_stream.h>
+#include <ap_fixed.h>
+
 typedef hls::vector<int16_t, 16> vec_int16_16;
 typedef hls::vector<uint16_t, 16> vec_uint16_16;
 typedef hls::vector<int32_t, 16> vec_int32_16;

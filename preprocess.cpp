@@ -5,8 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <cstring> //For memcpy
-#include <hls_stream.h>
-#include <ap_fixed.h>
 
 // char: 8 bit, short: 16 bit, long: 32 bit
 #include "preprocess.h"

@@ -17,8 +17,10 @@
 #include <stdlib.h>
 
 #include "preprocess.h"
+#include "filepath.h"
 
-int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
+// Read bit from file -> every 16 bits -> encode of binary prepresentation of data
+int data_packet_dat_to_struct(int fd, hls::stream<uint16_t> & input_alpha, struct SW_Data_Packet * data_packet){
 
     // Read data into a larger buffer and then strip 
     // all of the spaces because dat files are bit-space-delineated.
@@ -50,6 +52,8 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
         printf("File must start with word 0xA1FA.\n");
         return -2;
     }
+
+    //Write to data packet struct
 
     data_packet->alpha = buf[0];
     data_packet->i2c_address = 0b111 & (buf[1] >> 13);
@@ -80,50 +84,10 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
     }
     data_packet->omega = buf[buf_idx];
 
-    return 0;
-}
-
-// Read bit from file -> every 16 bits -> encode of binary prepresentation of data
-// reference to hls stream
-int data_packet_dat_to_stream(int fd, struct SW_Data_Packet * data_packet){
-
-    // Read data into a larger buffer and then strip 
-    // all of the spaces because dat files are bit-space-delineated.
-
-    // The times two is to account for the space-delineation
-    int num_bits = BUF_SIZE * 16 * 2;
-    uint8_t og_buf[num_bits];
-
-    if (read(fd, og_buf, num_bits) == -1) {
-        perror("read");
-    }
-
-    for (int i = 0; i < num_bits; i++) {
-        og_buf[i] = og_buf[i] - 0x30; // 0 in ASCII
-    }
-
-    uint16_t buf[BUF_SIZE];
-    uint8_t ms_half, ls_half;
-    int base = 0;
-    for (int i = 0; i < BUF_SIZE; i++) {
-        base = i * 32;
-        ms_half = (og_buf[base] << 7) | (og_buf[base + 2] << 6) | (og_buf[base + 4] << 5) | (og_buf[base + 6] << 4) | (og_buf[base + 8] << 3) | (og_buf[base + 10] << 2) | (og_buf[base + 12] << 1) | og_buf[base + 14];
-        ls_half = (og_buf[base + 16] << 7) | (og_buf[base + 18] << 6) | (og_buf[base + 20] << 5) | (og_buf[base + 22] << 4) | (og_buf[base + 24] << 3) | (og_buf[base + 26] << 2) | (og_buf[base + 28] << 1) | og_buf[base + 30];
-        buf[i] = (ms_half << 8) | ls_half;
-    }
-
-    // First short should be 0xA1FA
-    if (buf[0] != 0xa1fa) {
-        printf("File must start with word 0xA1FA.\n");
-        return -2;
-    }
-
+    // Write to stream
     for (int buf_idx=0; buf_idx < BUF_SIZE; buf_idx++){
-        for (int alpha_idx=0; alpha_idx < NUM_ALPHAS; alpha_idx++){
-            input_alpha[alpha_idx] << buf[buf_idx];
-        }
+        input_alpha << buf[buf_idx];
     }
-
 
     return 0;
 }
@@ -161,15 +125,15 @@ int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
     return 0;
 }
 
-int initialize_inputs(struct SW_Data_Packet * data_packet, vec_uint16_16 * all_peds) {
-    int data_packet_fd = open(str_packet_file, 0, "r");
+int initialize_inputs(hls::stream<uint16_t> & input_alpha, SW_Data_Packet * data_packet, vec_uint16_16 * all_peds) {
+    int data_packet_fd = open(packet_file, 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
     }
 
-    data_packet_dat_to_struct(data_packet_fd, data_packet);
+    data_packet_dat_to_struct(data_packet_fd, input_alpha, data_packet);
 
-    int peds_fd = open(str_ped_file, 0, "r");
+    int peds_fd = open(ped_file, 0, "r");
     if (peds_fd == -1) {
         perror("open");
     }
@@ -225,7 +189,7 @@ int write_output(int fd, const char ** bounds, vec_int32_16 *integrals, struct S
 }
 
 int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data_Packet * data_packet) {
-    int output_fd = open(str_output_file, O_CREAT | O_RDWR, 0666);
+    int output_fd = open(output_file, O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }
@@ -242,12 +206,7 @@ int main()
 {
     printf("Beginning of main\n");
     SW_Data_Packet input_data_packet[NUM_ALPHAS];
-    hls::stream<uint16_t> & input_alpha[NUM_ALPHAS];
-    // hls::stream<uint16_t> & input_alpha0,
-    // hls::stream<uint16_t> & input_alpha1,
-    // hls::stream<uint16_t> & input_alpha2,
-    // hls::stream<uint16_t> & input_alpha3,
-    // hls::stream<uint16_t> & input_alpha4,
+    hls::stream<uint16_t> input_alpha[NUM_ALPHAS];
 
     vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
     int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
@@ -257,7 +216,8 @@ int main()
     // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
         printf("Initializing inputs for alpha %u\n", alpha);
-        initialize_inputs(input_data_packet + alpha,
+        initialize_inputs(input_alpha[alpha],
+                         input_data_packet + alpha,
                          input_all_peds[alpha]);
     }
 
@@ -281,18 +241,11 @@ int main()
          zero_thresholds[a][3] = 5;
     }
 
-    hls::stream<uint16_t> input_alphas[NUM_ALPHAS];
-    //Loop over each ALPHA and each input stream to push
-    //data from corresponding input_data_packet
-
-    //Alternative would be to directly read the bit specification from
-    //EventStream.dat and push 16-bit words one-by-one into the streams
-
-    preprocess( &input_data_packet[0],
-                &input_data_packet[1],
-                &input_data_packet[2],
-                &input_data_packet[3],
-                &input_data_packet[4],
+    preprocess( input_alpha[0],
+                input_alpha[1],
+                input_alpha[2],
+                input_alpha[3],
+                input_alpha[4],
                 input_all_peds,
                 bounds,
                 zero_thresholds,
@@ -300,7 +253,7 @@ int main()
                 (struct Centroid *) &centroid
                 );
 
-    int output_fd = open(str_output_file, O_CREAT | O_RDWR, 0666);
+    int output_fd = open(output_file, O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }
