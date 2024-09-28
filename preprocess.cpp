@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <cstring> //For memcpy
+#include <iostream> //For simulation
 
 // char: 8 bit, short: 16 bit, long: 32 bit
 #include "preprocess.h"
@@ -20,9 +21,12 @@ void read_packet(hls::stream<uint16_t> & alpha_words,
     uint16_t sample_count;
     vec_uint16_16 sample;
 
-    while (1) {
+    bool run_loop = true;
+
+    while (run_loop) {
 
         uint16_t word = alpha_words.read();
+
         switch(state) {
             case STATE_START:
                 state = (word == 0xA1FA) ? STATE_ADDR : STATE_START;
@@ -92,7 +96,12 @@ void read_packet(hls::stream<uint16_t> & alpha_words,
 
             case STATE_END:
                 state = (word == 0X0E6A) ? STATE_START : STATE_END;
-                continue;
+                #if INFINITE == 1
+                    continue;
+                #else
+                    run_loop = false;
+                    break;
+                #endif
 
         }
     }
@@ -107,8 +116,10 @@ void ped_subtract(hls::stream<Header> & headers_in,
                   const vec_uint16_16 * peds) {
 
     
-
+    #if INFINITE == 1
     while (1) {
+    #endif
+
         Header header = headers_in.read();
         headers_out << header;
 
@@ -129,7 +140,9 @@ void ped_subtract(hls::stream<Header> & headers_in,
             }
             ped_sub_results << rvec;
         }
+    #if INFINITE == 1
     }
+    #endif
 }
 
 void integrate(hls::stream<Header> & headers_in,
@@ -138,7 +151,10 @@ void integrate(hls::stream<Header> & headers_in,
                const int16_t *bounds,
                hls::stream<vec_int32_16> & integrals) {
 
+    #if INFINITE == 1
     while (1) {
+    #endif
+
         Header header = headers_in.read();
         headers_out << header;
 
@@ -171,7 +187,9 @@ void integrate(hls::stream<Header> & headers_in,
         for (int i = 0; i < NUM_INTEGRALS; ++i) {
             integrals << tmp_integrals[i];
         }
+    #if INFINITE == 1
     }
+    #endif
 }
 
 void adc_conversion(hls::stream<Header> & headers_in,
@@ -182,20 +200,29 @@ void adc_conversion(hls::stream<Header> & headers_in,
                     const int32_t * dark_counts,
                     const uint8_t alpha_index) {
 
+    #if INFINITE == 1
     while (1) {
+    #endif
+
         Header header = headers_in.read();
         headers_out << header; 
-        vec_int32_16 sample;
-        vec_int32_16 converted_sample;
+        
+        for (int i = 0; i < NUM_INTEGRALS; ++i) {
+            vec_int32_16 sample;
+            vec_int32_16 converted_sample;
 
-        sample = integrals.read();
+            sample = integrals.read();
 
-        for (uint8_t i = 0; i < NUM_CHANNELS; i++) {
-            converted_sample[i] = sample[i] * gains[alpha_index][i] - dark_counts[i];
+            for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+                converted_sample[c] = sample[c] * gains[c] - dark_counts[c];
+            }
+
+            adc_converted_integrals << converted_sample;
         }
 
-        adc_converted_integrals << converted_sample;
+    #if INFINITE == 1
     }
+    #endif
 }
 
 void zero_suppress(hls::stream<Header> & headers_in,
@@ -203,7 +230,10 @@ void zero_suppress(hls::stream<Header> & headers_in,
                    const int32_t * zero_thresholds,
                    hls::stream<vec_int32_16> & zeroed_integrals) {
 
+    #if INFINITE == 1
     while (1) {
+    #endif
+
         Header header = headers_in.read();
         vec_int32_16 integral;
 
@@ -219,13 +249,19 @@ void zero_suppress(hls::stream<Header> & headers_in,
             zeroed_integrals << zeroed_integral;
         }
 
+    #if INFINITE == 1
     }
+    #endif
+    
 }
 
 void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
                      hls::stream<vec_int32_16> & merged_integrals) {
 
+    #if INFINITE == 1
     while (1) {
+    #endif
+
         vec_int32_16 current;
         for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
             for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
@@ -234,7 +270,9 @@ void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
 
             }
         }
+    #if INFINITE == 1
     }
+    #endif
 }
 
 
@@ -463,11 +501,11 @@ extern "C" {
             struct Centroid *centroid // Output Centroid
 	        )
     {
-#pragma HLS INTERFACE axis depth=1 port=input_alpha0
-#pragma HLS INTERFACE axis depth=1 port=input_alpha1
-#pragma HLS INTERFACE axis depth=1 port=input_alpha2
-#pragma HLS INTERFACE axis depth=1 port=input_alpha3
-#pragma HLS INTERFACE axis depth=1 port=input_alpha4
+#pragma HLS INTERFACE axis depth=5000 port=input_alpha0
+#pragma HLS INTERFACE axis depth=5000 port=input_alpha1
+#pragma HLS INTERFACE axis depth=5000 port=input_alpha2
+#pragma HLS INTERFACE axis depth=5000 port=input_alpha3
+#pragma HLS INTERFACE axis depth=5000 port=input_alpha4
 #pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds
 // #pragma HLS array_partition variable=input_all_peds type=complete dim=1
 #pragma HLS INTERFACE mode=bram depth=1 port=bounds

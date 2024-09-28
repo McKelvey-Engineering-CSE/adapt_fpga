@@ -17,6 +17,7 @@ typedef hls::vector<uint32_t, 16> vec_uint32_16;
 #define NUM_ALPHAS 5
 #define INTEGRAL_NUM 3
 
+#define INFINITE 0
 
 extern "C" {
     void preprocess(

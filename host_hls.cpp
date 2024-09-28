@@ -86,7 +86,7 @@ int data_packet_dat_to_struct(int fd, hls::stream<uint16_t> & input_alpha, struc
 
     // Write to stream
     for (int buf_idx=0; buf_idx < BUF_SIZE; buf_idx++){
-        input_alpha << buf[buf_idx];
+        input_alpha.write(buf[buf_idx]);
     }
 
     return 0;
@@ -235,18 +235,18 @@ int main()
 
     int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS];
     for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
-         zero_thresholds[a][0] = -1000;
-         zero_thresholds[a][1] = -1000;
-         zero_thresholds[a][2] = -1000;
-         zero_thresholds[a][3] = 5;
+         zero_thresholds[a][0] = 1;
+         zero_thresholds[a][1] = 1;
+         zero_thresholds[a][2] = 1;
+         zero_thresholds[a][3] = 1;
     }
 
     ap_fixed<16, 8> gains[NUM_ALPHAS][NUM_CHANNELS];
     int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS];
     for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
         for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
-            gains[a][c] = 0.5;
-            dark_counts[a][c] = 1;
+            gains[a][c] = 0.5; // 0.5;
+            dark_counts[a][c] = 1; // 1;
         }
     }
 
