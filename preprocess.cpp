@@ -178,8 +178,8 @@ void adc_conversion(hls::stream<Header> & headers_in,
                     hls::stream<Header> & headers_out,
                     hls::stream<vec_int32_16> & integrals,
                     hls::stream<vec_int32_16> & adc_converted_integrals,
-                    const ap_fixed<16, 8> * g, 
-                    const int32_t * dc,
+                    const ap_fixed<16, 8> * gains, 
+                    const int32_t * dark_counts,
                     const uint8_t alpha_index) {
 
     while (1) {
@@ -191,7 +191,7 @@ void adc_conversion(hls::stream<Header> & headers_in,
         sample = integrals.read();
 
         for (uint8_t i = 0; i < NUM_CHANNELS; i++) {
-            converted_sample[i] = sample[i] * g[alpha_index][i] - dc[i];
+            converted_sample[i] = sample[i] * gains[alpha_index][i] - dark_counts[i];
         }
 
         adc_converted_integrals << converted_sample;
@@ -334,9 +334,9 @@ void write_centroid(hls::stream<Centroid> & stream_centroid,
 void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
         const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
         const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+        const ap_fixed<16, 8> gains[NUM_ALPHAS][NUM_CHANNELS], // Read-Only Gain Values for ADC Conversion
+        const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
-        const ap_fixed<16, 8> g[NUM_ALPHAS][NUM_CHANNELS], // Gain values for ADC conversion
-        const int32_t dc[NUM_ALPHAS][NUM_CHANNELS], // DC offset values for ADC conversion
         hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
         const uint8_t alpha
         ) {
@@ -380,8 +380,8 @@ void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
                    headers_zero,
                    integrals,
                    adc_converted_integrals,
-                   g[alpha],
-                   dc[alpha],
+                   gains[alpha],
+                   dark_counts[alpha],
                    alpha);
 
     zero_suppress(headers_zero,
@@ -399,11 +399,11 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
               hls::stream<uint16_t> & input_alpha4,
         const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
         const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+        const ap_fixed<16, 8> gains[NUM_ALPHAS][NUM_CHANNELS], // Read-Only Gain Values for ADC Conversion
+        const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
         vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],      // Output Result (Integrals)
-        struct Centroid * centroid, // Output Centroid
-        const ap_fixed<16,8> g[NUM_ALPHAS][NUM_CHANNELS],
-        const int32_t dc[NUM_ALPHAS][NUM_CHANNELS]
+        struct Centroid * centroid // Output Centroid
         ) {
 
 
@@ -424,9 +424,9 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
 
     #pragma HLS array_partition variable=input_all_peds type=complete dim=1
     #pragma HLS array_partition variable=bounds type=complete dim=1
+    #pragma HLS array_partition variable=gains type=complete dim=1
+    #pragma HLS array_partition variable=dark_counts type=complete dim=1
     #pragma HLS array_partition variable=zero_thresholds type=complete dim=1
-    #pragma HLS array_partition variable=g type=complete dim=1
-    #pragma HLS array_partition variable=dc type=complete dim=1
 
     DATAFLOW_ALPHA(0);
     DATAFLOW_ALPHA(1);
@@ -456,11 +456,11 @@ extern "C" {
             hls::stream<uint16_t> & input_alpha4,
 	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
             const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+            const ap_fixed<16, 8> gains[NUM_ALPHAS][NUM_CHANNELS], // Read-Only Gain Values for ADC Conversion
+            const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-            struct Centroid *centroid, // Output Centroid
-            const ap_fixed<16, 8> g[NUM_ALPHAS][NUM_CHANNELS], // Gain values
-            const int32_t dc[NUM_ALPHAS][NUM_CHANNELS]  // DC offset values
+            struct Centroid *centroid // Output Centroid
 	        )
     {
 #pragma HLS INTERFACE axis depth=1 port=input_alpha0
@@ -471,11 +471,11 @@ extern "C" {
 #pragma HLS INTERFACE mode=bram depth=1 port=input_all_peds
 // #pragma HLS array_partition variable=input_all_peds type=complete dim=1
 #pragma HLS INTERFACE mode=bram depth=1 port=bounds
+#pragma HLS INTERFACE mode=bram depth=1 port=gains
+#pragma HLS INTERFACE mode=bram depth=1 port=dark_counts
 #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
 #pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm1
 #pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm2
-#pragma HLS INTERFACE mode=bram depth=1 port=g
-#pragma HLS INTERFACE mode=bram depth=1 port=dc
 
 
         dataflow(input_alpha0,
@@ -485,11 +485,11 @@ extern "C" {
                  input_alpha4,
                  input_all_peds,
                  bounds,
+                 gains,
+                 dark_counts,
                  zero_thresholds,
                  output_integrals,
-                 centroid,
-                 g,
-                 dc);
+                 centroid);
 
     }
 }

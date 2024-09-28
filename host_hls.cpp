@@ -241,6 +241,15 @@ int main()
          zero_thresholds[a][3] = 5;
     }
 
+    ap_fixed<16, 8> gains[NUM_ALPHAS][NUM_CHANNELS];
+    int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS];
+    for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+        for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+            gains[a][c] = 0.5;
+            dark_counts[a][c] = 1;
+        }
+    }
+
     preprocess( input_alpha[0],
                 input_alpha[1],
                 input_alpha[2],
@@ -248,6 +257,8 @@ int main()
                 input_alpha[4],
                 input_all_peds,
                 bounds,
+                gains,
+                dark_counts,
                 zero_thresholds,
                 output_integrals,
                 (struct Centroid *) &centroid

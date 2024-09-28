@@ -27,11 +27,11 @@ extern "C" {
             hls::stream<uint16_t> & input_alpha4,
 	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
             const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+            const ap_fixed<16, 8> gains[NUM_ALPHAS][NUM_CHANNELS], // Read-Only Gain Values for ADC Conversion
+            const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-            struct Centroid *centroid, // Output Centroid
-            const ap_fixed<16, 8> g[NUM_ALPHAS][NUM_CHANNELS], // Gain values
-            const int32_t dc[NUM_ALPHAS][NUM_CHANNELS]  // DC offset values
+            struct Centroid *centroid // Output Centroid
 	        );
 }
 
@@ -91,9 +91,9 @@ struct Centroid {
                             input_alpha##index , \
                             input_all_peds, \
                             bounds, \
+                            gains, \
+                            dark_counts, \
                             zero_thresholds, \
-                            g, \
-                            dc, \
                             zeroed_integrals, \
                             index \
                             )
