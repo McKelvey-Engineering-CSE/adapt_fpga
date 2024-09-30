@@ -3,6 +3,7 @@
 #define NUM_CHANNELS 16
 #define NUM_SAMPLES 256 // N
 #define BUF_SIZE 4105 // 8 + N*16 + 1 words (16 bits / 2 bytes per word)
+#define BASE_PATH "/home/research/n.nhan/Desktop/adapt_fpga"
 
 #include <vector>
 #include <unistd.h>
@@ -85,7 +86,7 @@ int data_packet_dat_to_struct(int fd, struct SW_Data_Packet * data_packet){
 
 // Read bit from file -> every 16 bits -> encode of binary prepresentation of data
 // reference to hls stream
-int data_packet_dat_to_stream(int fd, struct SW_Data_Packet * data_packet){
+int data_packet_dat_to_stream(hls::stream<uint16_t> & input_data_packet, int fd){
 
     // Read data into a larger buffer and then strip 
     // all of the spaces because dat files are bit-space-delineated.
@@ -119,11 +120,8 @@ int data_packet_dat_to_stream(int fd, struct SW_Data_Packet * data_packet){
     }
 
     for (int buf_idx=0; buf_idx < BUF_SIZE; buf_idx++){
-        for (int alpha_idx=0; alpha_idx < NUM_ALPHAS; alpha_idx++){
-            input_alpha[alpha_idx] << buf[buf_idx];
-        }
+        input_data_packet << buf[buf_idx];
     }
-
 
     return 0;
 }
@@ -162,14 +160,32 @@ int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
 }
 
 int initialize_inputs(struct SW_Data_Packet * data_packet, vec_uint16_16 * all_peds) {
-    int data_packet_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/EventStream.dat", 0, "r");
+    int data_packet_fd = open(BASE_PATH "/EventStream.dat", 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
     }
 
     data_packet_dat_to_struct(data_packet_fd, data_packet);
 
-    int peds_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/peds.dat", 0, "r");
+    int peds_fd = open(BASE_PATH "/peds.dat", 0, "r");
+    if (peds_fd == -1) {
+        perror("open");
+    }
+
+    peds_dat_to_arrays(peds_fd, all_peds);
+
+    return 0;
+}
+
+int initialize_inputs_stream(hls::stream<uint16_t> & input_data_packet, vec_uint16_16 * all_peds) {
+    int data_packet_fd = open(BASE_PATH "/EventStream.dat", 0, "r");
+    if (data_packet_fd == -1) {
+        perror("open");
+    }
+
+    data_packet_dat_to_stream(input_data_packet, data_packet_fd);
+
+    int peds_fd = open(BASE_PATH "/peds.dat", 0, "r");
     if (peds_fd == -1) {
         perror("open");
     }
@@ -225,7 +241,7 @@ int write_output(int fd, const char ** bounds, vec_int32_16 *integrals, struct S
 }
 
 int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data_Packet * data_packet) {
-    int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
+    int output_fd = open(BASE_PATH "/output.txt", O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }
@@ -241,8 +257,8 @@ int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data
 int main()
 {
     printf("Beginning of main\n");
-    SW_Data_Packet input_data_packet[NUM_ALPHAS];
-    hls::stream<uint16_t> & input_alpha[NUM_ALPHAS];
+    // SW_Data_Packet input_data_packet[NUM_ALPHAS];
+    hls::stream<uint16_t> input_data_packet[NUM_ALPHAS];
     // hls::stream<uint16_t> & input_alpha0,
     // hls::stream<uint16_t> & input_alpha1,
     // hls::stream<uint16_t> & input_alpha2,
@@ -257,8 +273,9 @@ int main()
     // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
         printf("Initializing inputs for alpha %u\n", alpha);
-        initialize_inputs(input_data_packet + alpha,
-                         input_all_peds[alpha]);
+        // initialize_inputs(input_data_packet + alpha,
+        //                  input_all_peds[alpha]);
+        initialize_inputs_stream(input_data_packet[alpha], input_all_peds[alpha]);
     }
 
     const char * bounds_strings[8] = {"-5", "5", "-10", "10", "-15", "15", "-20", "20"};
@@ -288,11 +305,12 @@ int main()
     //Alternative would be to directly read the bit specification from
     //EventStream.dat and push 16-bit words one-by-one into the streams
 
-    preprocess( &input_data_packet[0],
-                &input_data_packet[1],
-                &input_data_packet[2],
-                &input_data_packet[3],
-                &input_data_packet[4],
+    preprocess( 
+                input_data_packet[0],
+                input_data_packet[1],
+                input_data_packet[2],
+                input_data_packet[3],
+                input_data_packet[4],
                 input_all_peds,
                 bounds,
                 zero_thresholds,
@@ -300,7 +318,7 @@ int main()
                 (struct Centroid *) &centroid
                 );
 
-    int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
+    int output_fd = open(BASE_PATH"/output.txt", O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }

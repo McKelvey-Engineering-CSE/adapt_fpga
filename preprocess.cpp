@@ -1,3 +1,5 @@
+#define INFINITE
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -20,7 +22,6 @@ void read_packet(hls::stream<uint16_t> & alpha_words,
     uint8_t c;
     uint16_t sample_count;
     vec_uint16_16 sample;
-
     while (1) {
 
         uint16_t word = alpha_words.read();
@@ -93,7 +94,10 @@ void read_packet(hls::stream<uint16_t> & alpha_words,
 
             case STATE_END:
                 state = (word == 0X0E6A) ? STATE_START : STATE_END;
+                #ifdef INFINITE
                 continue;
+                #endif
+                break;
 
         }
     }
@@ -108,7 +112,7 @@ void ped_subtract(hls::stream<Header> & headers_in,
                   const vec_uint16_16 * peds) {
 
     
-
+    #ifdef INFINITE
     while (1) {
         Header header = headers_in.read();
         headers_out << header;
@@ -131,14 +135,37 @@ void ped_subtract(hls::stream<Header> & headers_in,
             ped_sub_results << rvec;
         }
     }
+    #endif
+    // Some as above without while(1)
+    Header header = headers_in.read();
+        headers_out << header;
+
+        ped_samples: for (uint16_t s = 0; s < NUM_SAMPLES; ++s) {
+            vec_uint16_16 svec = samples_in.read();
+
+            // calculate base address for integral 
+            const uint16_t idx = (header.starting_sample_number + s) % NUM_SAMPLES;
+            vec_uint16_16 pvec = peds[header.bank * NUM_SAMPLES + idx];
+
+            vec_int32_16 rvec;
+            
+            ped_channel: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+                uint16_t s = svec[c];
+                uint16_t p = pvec[c];
+                int32_t r = (int32_t) s - (int32_t) p;
+                rvec[c] = r;
+            }
+            ped_sub_results << rvec;
+        }
 }
 
 void integrate(hls::stream<Header> & headers_in,
                hls::stream<vec_int32_16> & ped_sub_results,
                const int16_t *bounds,
                hls::stream<vec_int32_16> & integrals) {
-
+    #ifdef INFINITE
     while (1) {
+    #endif
         Header header = headers_in.read();
 
         uint16_t base_addr = header.fine_time - header.starting_sample_number;
@@ -177,7 +204,9 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
                    const int32_t * zero_thresholds,
                    hls::stream<vec_int32_16> & zeroed_integrals) {
 
+    #ifdef INFINITE
     while (1) {
+    #endif
 
         vec_int32_16 integral;
 
@@ -199,7 +228,9 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
 void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
                      hls::stream<vec_int32_16> & merged_integrals) {
 
+    #ifdef INFINITE
     while (1) {
+    #endif
         vec_int32_16 current;
         for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
             for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
@@ -216,7 +247,9 @@ void island_detection(hls::stream<vec_int32_16> & merged_integrals,
                          hls::stream<vec_int32_16> & island_output,
                          hls::stream<int16_t> & stream_num_islands) {
 
-    while(1) {
+    #ifdef INFINITE
+    while (1) {
+    #endif
         bool in_island_tmp;
         int16_t num_islands_tmp;
         vec_int32_16 integral;
@@ -255,7 +288,9 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
                  hls::stream<vec_int32_16> & centroiding_output,
                  hls::stream<Centroid> & stream_centroid) {
     
-    while(1) {
+    #ifdef INFINITE
+    while (1) {
+    #endif
         uint16_t position_tmp;
         uint16_t signal_tmp;  
         vec_int32_16 integral;
@@ -292,7 +327,9 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
 void write_integrals(hls::stream<vec_int32_16> & centroiding_output,
                      vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS]) {
     
-    while(1) {
+    #ifdef INFINITE
+    while (1) {
+    #endif
         // printf("Writing integrals\n");
         vec_int32_16 current;
         write_integrals_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
@@ -308,7 +345,9 @@ void write_integrals(hls::stream<vec_int32_16> & centroiding_output,
 
 void write_centroid(hls::stream<Centroid> & stream_centroid,
                     Centroid * centroid) {
-    while(1) {
+    #ifdef INFINITE
+    while (1) {
+    #endif
         Centroid local_centroid;
         local_centroid = stream_centroid.read();   
         *centroid = local_centroid;
@@ -357,7 +396,6 @@ void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
 
 }
 
-
 void dataflow(hls::stream<uint16_t> & input_alpha0,
               hls::stream<uint16_t> & input_alpha1,
               hls::stream<uint16_t> & input_alpha2,
@@ -404,8 +442,6 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
     write_integrals(centroiding_output, output_integrals);
     write_centroid(stream_centroid, centroid);
     
-
-
 }
 
 
