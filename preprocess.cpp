@@ -275,56 +275,188 @@ void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
     #endif
 }
 
-
+#define START = 0xFE;
+#define END = 0xFF
+// Need better naming than island_pair_each_output
+// 0 0 0 0 0 0 0 0 0 3 5 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 8 9 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+// 0xFE 0x09 0x11 0x25 0x27 0xFF
 void island_detection(hls::stream<vec_int32_16> & merged_integrals,
                          hls::stream<vec_int32_16> & island_output,
+                         hls:stream<int16_t> & island_pair_each_output,
                          hls::stream<int16_t> & stream_num_islands) {
     bool in_island_tmp;
     int16_t num_islands_tmp;
     vec_int32_16 integral;
     island_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+        // if (i == INTEGRAL_NUM){
+        //     island_pair_each_output << START;
+        // }
         island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+            // if (a == 0){
+            //     island_pair_each_output << START;
+            // }
             integral = merged_integrals.read();
 
             if (i == INTEGRAL_NUM) {
-
+                if (a == 0){
+                    island_pair_each_output << START;
+                }
                 island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
                     bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
                     int16_t num_islands = (a == 0 && c == 0) ? 0 : num_islands_tmp;
                     if(integral[c] && !in_island) {
                         in_island = true;
                         ++num_islands;
+                        // Updating c to a * NUM_CHANNELS + c
+                        island_pair_each_output << c;
                     }
                     else if (!integral[c] && in_island) {
                         in_island = false;
+                        // Update here as well
+                        island_pair_each_output << c;
                     }
                     in_island_tmp = in_island;
                     num_islands_tmp = num_islands;
                 }
+                if (a == NUM_ALPHAS-1){
+                    island_pair_each_output << END;
+                    stream_num_islands << num_islands_tmp;
+                }
             }
-
             island_output << integral;
         }
-        if (i == INTEGRAL_NUM)
-            stream_num_islands << num_islands_tmp;
+        // if (i == INTEGRAL_NUM){
+        //     stream_num_islands << num_islands_tmp;
+        //     island_pair_each_output << END;
+        // }
+            // stream_num_islands << num_islands_tmp;
     }
 
 }
 
+void island_detection_and_centroiding(hls::stream<vec_int32_16> & merged_integrals,
+                                      hls::stream<vec_int32_16> & island_output,
+                                      hls:stream<int16_t> & island_pair_each_output,
+                                      hls::stream<int16_t> & stream_num_islands,
+
+                                      hls::stream<vec_int32_16> & centroiding_output,
+                                      hls::stream<Centroid> & stream_centroid) {
+    bool in_island_tmp;
+    int16_t num_islands_tmp;
+    vec_int32_16 integral;
+
+    uint16_t position_tmp;
+    uint16_t signal_tmp;  
+    Centroid centroid;
+
+    island_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+        // if (i == INTEGRAL_NUM){
+        //     island_pair_each_output << START;
+        // }
+        island_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+            // if (a == 0){
+            //     island_pair_each_output << START;
+            // }
+            integral = merged_integrals.read();
+
+            if (i == INTEGRAL_NUM) {
+                // if (a == 0){
+                //     island_pair_each_output << START;
+                // }
+                position = 0;
+                signal = 0;
+                //       4 5     8 9
+                // 0 0 0 1 1 0 0 2 2 0 0 0 ........
+                //       1       2
+                //       (1 * 4 + 1 * 5) / (1+1)
+                //       (2 * 8 + 2 * 9) / (2+2)
+                island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+                    bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
+                    int16_t num_islands = (a == 0 && c == 0) ? 0 : num_islands_tmp;
+                    
+                    uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
+                    uint16_t signal = (a == 0 && c == 0) ? 0 : signal_tmp;
+                    const uint16_t pos = a * NUM_CHANNELS + c;
+                    
+                    if(integral[c] && !in_island) {
+                        in_island = true;
+                        ++num_islands;
+                        position += pos * integral[c];
+                        signal += integral[c];
+                        island_pair_each_output << pos;
+                    }
+                    else if (!integral[c] && in_island) {
+                        in_island = false;
+                        island_pair_each_output << pos;
+                        centroid.position = position / signal ;
+                        centroid.signal = signal ;
+                        stream_centroid << centroid;
+
+                        position = 0;
+                        signal = 0;
+                    }
+                    in_island_tmp = in_island;
+                    num_islands_tmp = num_islands;
+
+                    position_tmp = position;
+                    signal_tmp = signal;
+
+
+                }
+                if (a == NUM_ALPHAS-1){
+                    
+                    // centroid.count = stream_num_islands.read();        
+                    centroid.position = (centroid.signal > 0) ? position_tmp / signal_tmp : 0;
+                    centroid.signal = (centroid.signal > 0) ? signal_tmp : 0;
+                    if signal_tmp:
+                        stream_centroid << centroid;
+
+                    island_pair_each_output << END;
+                    stream_num_islands << num_islands_tmp;
+                }
+
+            }
+            island_output << integral;
+        }
+        // if (i == INTEGRAL_NUM){
+        //     stream_num_islands << num_islands_tmp;
+        //     island_pair_each_output << END;
+        // }
+            // stream_num_islands << num_islands_tmp;
+    }
+
+}
+
+
 void centroiding(hls::stream<vec_int32_16> & island_output,
                  hls::stream<int16_t> & stream_num_islands,
                  hls::stream<vec_int32_16> & centroiding_output,
+                 hls:stream<int16_t> & island_pair_each_output,
                  hls::stream<Centroid> & stream_centroid) {
     uint16_t position_tmp;
     uint16_t signal_tmp;  
     vec_int32_16 integral;
     Centroid centroid;
     centroiding_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+
+        // This one go through all alpha (5) x channel (16) = 80 and 
+        // Do weighted_mean on all of them ?
+        // Send it downstream ?
+        // 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+        // Since we send boundaries now, we can directly know position
+        // Should we do state machine for this ?
+        
+        // bad naming, please do something about it...
+        uint8_t start_sub_integral, end_sub_integral;
+
+
+        
         centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
             integral = island_output.read();
-
+            start = island_pair_each_output.read();
+            
             if (i == INTEGRAL_NUM) {
-
+                
                 centroiding_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
                     uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
                     uint16_t signal = (a == 0 && c == 0) ? 0 : signal_tmp;
