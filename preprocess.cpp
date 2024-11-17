@@ -365,11 +365,7 @@ void island_detection_and_centroiding(hls::stream<vec_int32_16> & merged_integra
                 // }
                 position = 0;
                 signal = 0;
-                //       4 5     8 9
-                // 0 0 0 1 1 0 0 2 2 0 0 0 ........
-                //       1       2
-                //       (1 * 4 + 1 * 5) / (1+1)
-                //       (2 * 8 + 2 * 9) / (2+2)
+
                 island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
                     bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
                     int16_t num_islands = (a == 0 && c == 0) ? 0 : num_islands_tmp;
@@ -440,13 +436,7 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
     centroiding_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
 
         // This one go through all alpha (5) x channel (16) = 80 and 
-        // Do weighted_mean on all of them ?
-        // Send it downstream ?
-        // 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-        // Since we send boundaries now, we can directly know position
-        // Should we do state machine for this ?
         
-        // bad naming, please do something about it...
         uint8_t start_sub_integral, end_sub_integral;
 
 
@@ -494,12 +484,29 @@ void write_integrals(hls::stream<vec_int32_16> & centroiding_output,
     }
 }
 
+// Change individuals centroid -> array of centroids
+// preprocess -> array of centroid, write one by one
 void write_centroid(hls::stream<Centroid> & stream_centroid,
                     Centroid * centroid) {
     Centroid local_centroid;
     local_centroid = stream_centroid.read();   
     *centroid = local_centroid;
 }
+
+// NEW CODE : 
+void write_centroid_and_island(hls::stream<Centroid> & stream_centroid,
+                               hls::stream<int16_t> & stream_num_islands,
+                               Centroid * centroid) {
+    Centroid local_centroid;
+    int16_t number_of_island = stream_num_islands.read();
+    for (int16_t i = 0; i < number_of_islands; i++) {
+        centroid[i] = stream_centroid.read();
+    }
+
+    // local_centroid = stream_centroid.read();   
+   
+}
+
 
 void dataflow_alpha(hls::stream<uint16_t> & input_alpha,
         const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
@@ -604,15 +611,23 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
     DATAFLOW_ALPHA(3);
     DATAFLOW_ALPHA(4);
 
+    // merge_integrals(zeroed_integrals,
+    //                 merged_integrals);
+
+    // island_detection(merged_integrals,island_output,stream_num_islands);
+    // centroiding(island_output,stream_num_islands,centroiding_output,stream_centroid);
+    // write_integrals(centroiding_output, output_integrals);
+    // write_centroid(stream_centroid, centroid);
+    
+    // NEW CODE : 
     merge_integrals(zeroed_integrals,
                     merged_integrals);
 
-    island_detection(merged_integrals,island_output,stream_num_islands);
-    centroiding(island_output,stream_num_islands,centroiding_output,stream_centroid);
+    island_detection_and_centroiding(merge_integrals, island_output, island_pair_each_output, stream_num_islands,
+                                     centroiding_output, stream_centroid)
     write_integrals(centroiding_output, output_integrals);
-    write_centroid(stream_centroid, centroid);
-    
-
+    write_centroid_and_island(stream_centroid, stream_num_islands, centroid)
+ 
 
 }
 
@@ -645,7 +660,7 @@ extern "C" {
 #pragma HLS INTERFACE mode=bram depth=1 port=dark_counts
 #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
 #pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm1
-#pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm2
+#pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm2 // CHANGE?
 
 
         dataflow(input_alpha0,

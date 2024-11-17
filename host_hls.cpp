@@ -211,7 +211,7 @@ int main()
     vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
     int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
     vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
-    Centroid centroid;
+    Centroid centroid; // Change
 
     // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
