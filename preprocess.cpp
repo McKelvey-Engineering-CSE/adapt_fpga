@@ -496,13 +496,13 @@ void write_centroid(hls::stream<Centroid> & stream_centroid,
 // NEW CODE : 
 void write_centroid_and_island(hls::stream<Centroid> & stream_centroid,
                                hls::stream<int16_t> & stream_num_islands,
+                               int16_t * number_of_islands,
                                Centroid * centroid) {
     Centroid local_centroid;
-    int16_t number_of_island = stream_num_islands.read();
-    for (int16_t i = 0; i < number_of_islands; i++) {
+    *number_of_islands = stream_num_islands.read();
+    for (int16_t i = 0; i < *number_of_islands; i++) {
         centroid[i] = stream_centroid.read();
     }
-
     // local_centroid = stream_centroid.read();   
    
 }
@@ -580,7 +580,10 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
         const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
         const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
         vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],      // Output Result (Integrals)
-        struct Centroid * centroid // Output Centroid
+        int16_t * number_of_islands,
+        // struct Centroid * centroid // Output Centroid
+        struct Centroid centroid[1000] // Output Centroid
+
         ) {
 
 
@@ -624,11 +627,10 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
                     merged_integrals);
 
     island_detection_and_centroiding(merge_integrals, island_output, island_pair_each_output, stream_num_islands,
-                                     centroiding_output, stream_centroid)
+                                     centroiding_output, stream_centroid);
     write_integrals(centroiding_output, output_integrals);
-    write_centroid_and_island(stream_centroid, stream_num_islands, centroid)
+    write_centroid_and_island(stream_centroid, stream_num_islands, number_of_islands, centroid);
  
-
 }
 
 
@@ -645,7 +647,9 @@ extern "C" {
             const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-            struct Centroid *centroid // Output Centroid
+            // struct Centroid *centroid // Output Centroid
+            int16_t * number_of_islands,
+            struct Centroid centroid[1000] // Output Centroid
 	        )
     {
 #pragma HLS INTERFACE axis depth=5000 port=input_alpha0
@@ -659,9 +663,11 @@ extern "C" {
 #pragma HLS INTERFACE mode=bram depth=1 port=gains
 #pragma HLS INTERFACE mode=bram depth=1 port=dark_counts
 #pragma HLS INTERFACE mode=bram depth=4 port=zero_thresholds
+
 #pragma HLS INTERFACE m_axi depth=1 port=output_integrals bundle=aximm1
 #pragma HLS INTERFACE m_axi depth=1 port=centroid bundle=aximm2 // CHANGE?
 
+#pragma HLS INTERFACE m_axi depth=1 port=number_of_islands bundle=aximm3
 
         dataflow(input_alpha0,
                  input_alpha1,
@@ -674,6 +680,7 @@ extern "C" {
                  dark_counts,
                  zero_thresholds,
                  output_integrals,
+                 number_of_islands,
                  centroid);
 
     }

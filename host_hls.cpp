@@ -211,7 +211,8 @@ int main()
     vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES];
     int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS];
     vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS];
-    Centroid centroid; // Change
+    int16_t number_of_islands;
+    Centroid centroid[1000]; // Change
 
     // // Initialize the data used in the test
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
@@ -250,6 +251,21 @@ int main()
         }
     }
 
+    // preprocess( input_alpha[0],
+    //             input_alpha[1],
+    //             input_alpha[2],
+    //             input_alpha[3],
+    //             input_alpha[4],
+    //             input_all_peds,
+    //             bounds,
+    //             gains,
+    //             dark_counts,
+    //             zero_thresholds,
+    //             output_integrals,
+    //             (struct Centroid *) &centroid
+    //             );
+    
+    // NEW CODE :
     preprocess( input_alpha[0],
                 input_alpha[1],
                 input_alpha[2],
@@ -261,7 +277,8 @@ int main()
                 dark_counts,
                 zero_thresholds,
                 output_integrals,
-                (struct Centroid *) &centroid
+                & number_of_islands,
+                centroid
                 );
 
     int output_fd = open(output_file, O_CREAT | O_RDWR, 0666);
@@ -279,10 +296,11 @@ int main()
                      output_integrals[alpha],
                      input_data_packet + alpha);
     }
-
-    write_header(output_fd, "centroid_position", centroid.position);
-    write_header(output_fd, "centroid_signal", centroid.signal);
-    write_header(output_fd, "centroid_count", centroid.count);
-
+    for (int16_t i = 0; i<number_of_islands; ++i){
+        write_header(output_fd, "centroid_position", centroid[i].position);
+        write_header(output_fd, "centroid_signal", centroid[i].signal);
+        write_header(output_fd, "centroid_count", centroid[i].count);
+    }
+   
     return 0;
 }
