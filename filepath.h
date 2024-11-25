@@ -4,7 +4,7 @@
 #include <string>
 
 //TODO: Update the following path!
-const std::string path_to_repo = "C:/Users/msudv/Documents/Development/ADAPT/FPGA_Motherboard/adapt_fpga/";
+const std::string path_to_repo = "/home/research/n.nhan/Desktop/adapt_fpga/";
 const std::string str_packet_file = path_to_repo + "EventStream.dat";
 const std::string str_ped_file = path_to_repo + "peds.dat";
 const std::string str_output_file = path_to_repo + "output.txt";

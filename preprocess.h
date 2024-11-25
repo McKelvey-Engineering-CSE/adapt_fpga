@@ -19,6 +19,25 @@ typedef hls::vector<uint32_t, 16> vec_uint32_16;
 
 #define INFINITE 0
 
+// extern "C" {
+//     void preprocess(
+// 	        hls::stream<uint16_t> & input_alpha0,
+//             hls::stream<uint16_t> & input_alpha1,
+//             hls::stream<uint16_t> & input_alpha2,
+//             hls::stream<uint16_t> & input_alpha3,
+//             hls::stream<uint16_t> & input_alpha4,
+// 	        const vec_uint16_16 input_all_peds[NUM_ALPHAS][2*NUM_SAMPLES], // Read-Only Pedestals
+//             const int16_t bounds[NUM_ALPHAS][2*NUM_INTEGRALS], // Read-Only Integral Bounds
+//             const ap_fixed<16, 8> gains[NUM_ALPHAS][NUM_CHANNELS], // Read-Only Gain Values for ADC Conversion
+//             const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
+//             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
+// 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
+//             struct Centroid *centroid // Output Centroid
+// 	        );
+// }
+
+
+// New code :
 extern "C" {
     void preprocess(
 	        hls::stream<uint16_t> & input_alpha0,
@@ -32,7 +51,8 @@ extern "C" {
             const int32_t dark_counts[NUM_ALPHAS][NUM_CHANNELS],  // Read-Only Dark Count Offset Values
             const int32_t zero_thresholds[NUM_ALPHAS][NUM_INTEGRALS], // Read-Only Thresholds for zero-suppression
 	        vec_int32_16 output_integrals[NUM_ALPHAS][NUM_INTEGRALS],       // Output Result (Integrals)
-            struct Centroid *centroid // Output Centroid
+            int16_t * number_of_islands,
+            struct Centroid centroid[1000] // Output Centroid
 	        );
 }
 

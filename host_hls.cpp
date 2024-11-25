@@ -93,10 +93,12 @@ int data_packet_dat_to_struct(int fd, hls::stream<uint16_t> & input_alpha, struc
 }
 
 int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
+    std::cout << "Open in peds_dat_to_arrays \n";
     FILE * fp = fdopen(fd, "r");
     if(fp == NULL) {
         perror("fdopen");
     }
+    std::cout << "Done - Open in peds_dat_to_arrays \n";
 
     uint16_t sample_num;
     uint16_t peds[NUM_CHANNELS];
@@ -126,6 +128,7 @@ int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
 }
 
 int initialize_inputs(hls::stream<uint16_t> & input_alpha, SW_Data_Packet * data_packet, vec_uint16_16 * all_peds) {
+    std::cout << "Open in initialize_inputs \n";
     int data_packet_fd = open(packet_file, 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
@@ -137,6 +140,7 @@ int initialize_inputs(hls::stream<uint16_t> & input_alpha, SW_Data_Packet * data
     if (peds_fd == -1) {
         perror("open");
     }
+    std::cout << " Done - Open in initialize_inputs \n";
 
     peds_dat_to_arrays(peds_fd, all_peds);
 
@@ -189,10 +193,14 @@ int write_output(int fd, const char ** bounds, vec_int32_16 *integrals, struct S
 }
 
 int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data_Packet * data_packet) {
+    std::cout << " Open in produce_output \n";
+
     int output_fd = open(output_file, O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }
+    std::cout << " Done - Open in produce_output \n";
+
 
     write_output(output_fd, bounds, integrals, data_packet);
 
@@ -281,10 +289,13 @@ int main()
                 centroid
                 );
 
+    std::cout << " Open in main \n";
+
     int output_fd = open(output_file, O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }
+    std::cout << " Done - Open in main \n";
 
     for (unsigned alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
         // produce_output(bounds_strings,

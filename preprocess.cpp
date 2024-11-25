@@ -275,14 +275,14 @@ void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
     #endif
 }
 
-#define START = 0xFE;
-#define END = 0xFF
+#define START 0xFE
+#define END 0xFF
 // Need better naming than island_pair_each_output
 // 0 0 0 0 0 0 0 0 0 3 5 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 8 9 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 // 0xFE 0x09 0x11 0x25 0x27 0xFF
 void island_detection(hls::stream<vec_int32_16> & merged_integrals,
                          hls::stream<vec_int32_16> & island_output,
-                         hls:stream<int16_t> & island_pair_each_output,
+                         hls::stream<int16_t> & island_pair_each_output,
                          hls::stream<int16_t> & stream_num_islands) {
     bool in_island_tmp;
     int16_t num_islands_tmp;
@@ -336,9 +336,8 @@ void island_detection(hls::stream<vec_int32_16> & merged_integrals,
 
 void island_detection_and_centroiding(hls::stream<vec_int32_16> & merged_integrals,
                                       hls::stream<vec_int32_16> & island_output,
-                                      hls:stream<int16_t> & island_pair_each_output,
+                                      hls::stream<int16_t> & island_pair_each_output,
                                       hls::stream<int16_t> & stream_num_islands,
-
                                       hls::stream<vec_int32_16> & centroiding_output,
                                       hls::stream<Centroid> & stream_centroid) {
     bool in_island_tmp;
@@ -363,8 +362,6 @@ void island_detection_and_centroiding(hls::stream<vec_int32_16> & merged_integra
                 // if (a == 0){
                 //     island_pair_each_output << START;
                 // }
-                position = 0;
-                signal = 0;
 
                 island_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
                     bool in_island = (a == 0 && c == 0) ? 0 : in_island_tmp;
@@ -404,8 +401,7 @@ void island_detection_and_centroiding(hls::stream<vec_int32_16> & merged_integra
                     // centroid.count = stream_num_islands.read();        
                     centroid.position = (centroid.signal > 0) ? position_tmp / signal_tmp : 0;
                     centroid.signal = (centroid.signal > 0) ? signal_tmp : 0;
-                    if signal_tmp:
-                        stream_centroid << centroid;
+                    if (signal_tmp) stream_centroid << centroid;
 
                     island_pair_each_output << END;
                     stream_num_islands << num_islands_tmp;
@@ -427,7 +423,7 @@ void island_detection_and_centroiding(hls::stream<vec_int32_16> & merged_integra
 void centroiding(hls::stream<vec_int32_16> & island_output,
                  hls::stream<int16_t> & stream_num_islands,
                  hls::stream<vec_int32_16> & centroiding_output,
-                 hls:stream<int16_t> & island_pair_each_output,
+                 hls::stream<int16_t> & island_pair_each_output,
                  hls::stream<Centroid> & stream_centroid) {
     uint16_t position_tmp;
     uint16_t signal_tmp;  
@@ -443,7 +439,7 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
         
         centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
             integral = island_output.read();
-            start = island_pair_each_output.read();
+            // start = island_pair_each_output.read();
             
             if (i == INTEGRAL_NUM) {
                 
@@ -591,13 +587,17 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
     static hls::stream<vec_int32_16> merged_integrals;
     static hls::stream<vec_int32_16> island_output;
     static hls::stream<vec_int32_16> centroiding_output;
+    hls::stream<int16_t> island_pair_each_output;
     hls::stream<int16_t> stream_num_islands;
     hls::stream<Centroid> stream_centroid;
     #pragma HLS STREAM variable=zeroed_integrals depth=4
     #pragma HLS STREAM variable=merged_integrals depth=20
     #pragma HLS STREAM variable=island_output depth=20
     #pragma HLS STREAM variable=centroiding_output depth=20
+
+    #pragma HLS STREAM variable=island_pair_each_output depth=1
     #pragma HLS STREAM variable=stream_num_islands depth=1
+
     #pragma HLS STREAM variable=stream_centroid depth=1
 
 	#pragma HLS DATAFLOW
@@ -625,8 +625,7 @@ void dataflow(hls::stream<uint16_t> & input_alpha0,
     // NEW CODE : 
     merge_integrals(zeroed_integrals,
                     merged_integrals);
-
-    island_detection_and_centroiding(merge_integrals, island_output, island_pair_each_output, stream_num_islands,
+    island_detection_and_centroiding(merge_integrals, island_output, island_pair_each_output, stream_num_islands, 
                                      centroiding_output, stream_centroid);
     write_integrals(centroiding_output, output_integrals);
     write_centroid_and_island(stream_centroid, stream_num_islands, number_of_islands, centroid);
