@@ -378,10 +378,10 @@ void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
         //initializing variables
         const int max_tripcount_top = MAX_UPDATES;
         const int max_tripcount_left = MERGETABLE_SIZE;
-        int32_t data[ROW*COL] = {0};
+        static int32_t data[ROW*COL];
         #pragma HLS ARRAY_PARTITION variable=data cyclic factor=16 dim=1
 
-        int32_t label[ROW][COL] = {0};
+        static int32_t label[ROW][COL];
 
         vec_int32_16 integral, label_downstream;
         int32_t label_tmp = 0, num_islands = 0;
@@ -559,11 +559,11 @@ void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
         //     mt[i] = mt[mt[i] - 1];
         // }
 
-        int32_t mt[MERGETABLE_SIZE] = {0}, mt_reduced[MERGETABLE_SIZE] = {0};
+        static int32_t mt[MERGETABLE_SIZE], mt_reduced[MERGETABLE_SIZE];
         #pragma HLS bind_storage variable=mt type=RAM_2P impl=bram
         #pragma HLS bind_storage variable=mt_reduced type=RAM_2P impl=bram
 
-        int32_t mt_pending[MERGETABLE_SIZE] = {0};
+        static int32_t mt_pending[MERGETABLE_SIZE];
         #pragma HLS ARRAY_PARTITION variable=mt_pending complete dim=1
 
         
@@ -579,7 +579,7 @@ void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
         // std::cout << std::endl;
 
         // Process TOP
-        for (uint16_t i = 0; i < count_top; ++i) {
+        process_top: for (uint16_t i = 0; i < count_top; ++i) {
             #pragma HLS PIPELINE II=1
             #pragma HLS loop_tripcount min=1 max=max_tripcount_top
             upd = stream_top.read();
@@ -588,7 +588,7 @@ void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
         }
 
         // Process LEFT
-        for (uint16_t i = 0; i < count_left; ++i) {
+        process_left: for (uint16_t i = 0; i < count_left; ++i) {
             #pragma HLS PIPELINE II=1
             #pragma HLS loop_tripcount min=1 max=max_tripcount_left
             upd = stream_left.read();
@@ -598,7 +598,7 @@ void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
 
         #if EIGHTWAY_NEIGHBOR == 1
         // Process TOP-LEFT
-        for (uint16_t i = 0; i < count_top_left; ++i) {
+        process_top_left: for (uint16_t i = 0; i < count_top_left; ++i) {
             #pragma HLS PIPELINE II=1
             #pragma HLS loop_tripcount min=1 max=max_tripcount_left
             upd = stream_top_left.read();
@@ -607,7 +607,7 @@ void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
         }
 
         // Process TOP-RIGHT
-        for (uint16_t i = 0; i < count_top_right; ++i) {
+        process_top_right: for (uint16_t i = 0; i < count_top_right; ++i) {
             #pragma HLS PIPELINE II=1
             #pragma HLS loop_tripcount min=1 max=max_tripcount_left
             upd = stream_top_right.read();
@@ -622,12 +622,12 @@ void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
         // }
         // std::cout << std::endl;
 
-        for (uint16_t i = 0; i < MERGETABLE_SIZE; i++) {
+        mt_update_1: for (uint16_t i = 0; i < MERGETABLE_SIZE; i++) {
             if (mt_pending[i] == 0) break;
             mt[i] = mt_pending[mt_pending[i] - 1];
         }
 
-        for (uint16_t i=0; i < MERGETABLE_SIZE; ++i) {
+        mt_update_2: for (uint16_t i=0; i < MERGETABLE_SIZE; ++i) {
             if(mt[i]==0) break;
             if(mt_reduced[mt[i]-1] == 0){
                 ++num_islands;
