@@ -1,0 +1,13 @@
+current_label = label[i][j];
+                            if (label[i][j] > 0){
+                                label[i][j] = std::min(label[i][j], label[i][j-1]);
+                                if(current_label != label[i][j]){
+                                    mt[current_label-1] = label[i][j];
+                                }else{
+                                    mt[label[i][j-1]-1] = label[i][j];
+                                }
+                            }else{
+                                label[i][j] = label[i][j-1];
+                            }
+
+                            assigned_flag = 1;

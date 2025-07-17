@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <cstring> //For memcpy
 #include <hls_stream.h>
+#include <iostream>
+#include <iomanip>
 
 // char: 8 bit, short: 16 bit, long: 32 bit
 #include "preprocess.h"
@@ -109,6 +111,23 @@ void zero_suppress(hls::stream<vec_int32_16> & integrals,
     }
 }
 
+// //random 1/0 data 
+// void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
+//                      hls::stream<vec_int32_16> & merged_integrals) {
+//     vec_int32_16 current;
+//     for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+//         for (uint8_t alpha = 0; alpha < NUM_ALPHAS; ++alpha) {
+//             for (uint16_t c = 0; c < NUM_CHANNELS; ++c) {
+//                 current[c] = ((std::rand()&1) < 1) ? 0 : 1;
+//             }
+//             merged_integrals << current;
+            
+//         }
+//     }
+    
+// }
+
+// Event stream data
 void merge_integrals(hls::stream<vec_int32_16> zeroed_integrals[NUM_ALPHAS],
                      hls::stream<vec_int32_16> & merged_integrals) {
     vec_int32_16 current;
@@ -157,8 +176,542 @@ void island_detection(hls::stream<vec_int32_16> & merged_integrals,
 
 }
 
-void centroiding(hls::stream<vec_int32_16> & island_output,
+// void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
+//                          hls::stream<vec_int32_16> & island_output,
+//                          hls::stream<int16_t> & stream_num_islands,
+//                          hls::stream<int16_t> & stream_islands_labels) {
+
+//         //initializing variables
+//         int32_t data[ROW*COL] = {0};
+//         #pragma HLS ARRAY_PARTITION variable=data cyclic factor=16 dim=1
+
+//         int32_t label[ROW][COL] = {0};
+
+//         vec_int32_16 integral, label_downstream;
+//         uint8_t col = 0, row = 0;
+//         int32_t label_tmp = 0, num_islands = 0;
+//         int32_t top = 0, top_left = 0, top_right = 0, left = 0;
+
+//         //std::cout << "Data before island_detection" << std:: endl;
+//         //read in data
+//         read_rows: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+//             read_cols: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+//                 integral = merged_integrals.read();
+
+//                 if (i == INTEGRAL_NUM) {
+//                     for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+// 					#pragma HLS UNROLL FACTOR=16
+//                         data[a*NUM_CHANNELS + c] = integral[c];
+//                         // std::cout << data[a*NUM_CHANNELS + c] << " ";
+//                         // if((a*NUM_CHANNELS + c)>0 && (a*NUM_CHANNELS + c) % 10 == 9){
+//                         //     std::cout << std:: endl;
+//                         // }
+//                     }
+//                 }
+
+//                 //output integral to downstream
+//                 island_output << integral;
+//             }
+//         }
+
+        
+//         uint32_t mt[MERGETABLE_SIZE] = {0}, mt_reduced[MERGETABLE_SIZE] = {0};
+//         #pragma HLS bind_storage variable=mt type=RAM_2P impl=bram
+//         #pragma HLS bind_storage variable=mt_reduced type=RAM_2P impl=bram
+
+//         //forward tracing
+//         //assign labels to each block
+
+//         //middle section
+//         label_rows: for(uint8_t i = 0; i < ROW; i++){
+//             label_cols: for(uint8_t j = 0; j < COL; j++){
+//                 if(data[i*COL + j]){ //check if current blob is white
+
+//                     // std::cout << "Data before labeling" << std:: endl;
+//                     // for(uint8_t i = 0; i < ROW; i++){
+//                     //     for(uint8_t j = 0; j < COL; j++){
+//                     //         std::cout << label[i][j] << " ";
+//                     //     }
+//                     //     std::cout << std::endl;
+//                     // }
+
+//                     uint8_t assigned_flag;
+
+//                     //research Q1: eightway_neighbor condition inside if block vs inside top_left & top_right conditions no improvement
+//                     //research Q2: can we set assigned_flag in parallel as checking the neighbors(checking i,j, and labels directly for assigned_flag) no improvement
+//                     //runtime vs resource
+//                     #if EIGHTWAY_NEIGHBOR == 1
+//                         //scan neighbors
+//                         top_left = (i-1 >= 0 && j-1 >= 0 && label[i-1][j-1] > 0) ? label[i-1][j-1] : MERGETABLE_SIZE; 
+//                         top = (i-1 >= 0 && label[i-1][j] > 0) ? label[i-1][j] : MERGETABLE_SIZE;
+//                         top_right = (i-1 >= 0 && j+1 < COL && label[i-1][j+1] > 0) ? label[i-1][j+1] : MERGETABLE_SIZE;
+//                         left = (j-1 >= 0 && label[i][j-1] > 0) ? label[i][j-1] : MERGETABLE_SIZE;
+
+//                         assigned_flag = ((i-1 >= 0 && j-1 >= 0 && label[i-1][j-1] > 0) || (i-1 >= 0 && label[i-1][j] > 0) || 
+//                                           (i-1 >= 0 && j+1 < COL && label[i-1][j+1] > 0) || (j-1 >= 0 && label[i][j-1] > 0));
+
+//                         //update label and merge table
+//                         label[i][j] = assigned_flag ? std::min(std::min(top_left, top), std::min(top_right, left)) : label_tmp + 1;
+//                         mt[label[i][j]-1] = assigned_flag ? mt[label[i][j]-1] : label_tmp + 1;
+//                         label_tmp = assigned_flag ? label_tmp : label_tmp + 1;
+
+//                         //top left
+//                         if (top_left!=MERGETABLE_SIZE) {
+//                             mt[label[i-1][j-1]-1] = label[i][j];
+//                         }
+//                         //top
+//                         if (top!=MERGETABLE_SIZE) {
+//                             mt[label[i-1][j]-1] = label[i][j];
+//                         }
+//                         //top right
+//                         if (top_right!=MERGETABLE_SIZE) {
+//                             mt[label[i-1][j+1]-1] = label[i][j];
+//                         }
+//                         //left
+//                         if (left!=MERGETABLE_SIZE) {
+//                             mt[label[i][j-1]-1] = label[i][j];
+//                         }
+//                     #else
+//                         //scan neighbors
+//                         top = (i-1 >= 0 && j >= 0 && label[i-1][j] > 0) ? label[i-1][j] : MERGETABLE_SIZE;
+//                         left = (j-1 >= 0 && label[i][j-1] > 0) ? label[i][j-1] : MERGETABLE_SIZE;
+//                         assigned_flag = ((i-1 >= 0 && j >= 0 && label[i-1][j] > 0) || (j-1 >= 0 && label[i][j-1] > 0));
+                        
+//                         //update label and merge table
+//                         label[i][j] = assigned_flag ? std::min(top,left) : label_tmp + 1;
+//                         mt[label[i][j]-1] = assigned_flag ? mt[label[i][j]-1] : label_tmp + 1;
+//                         label_tmp = assigned_flag ? label_tmp : label_tmp + 1;
+
+//                         //top
+//                         if (top!=MERGETABLE_SIZE) {
+//                             mt[label[i-1][j]-1] = label[i][j];
+//                         }
+
+//                         //left
+//                         if (left!=MERGETABLE_SIZE) {
+//                             mt[label[i][j-1]-1] = label[i][j];
+//                         }
+//                     #endif
+
+//                     // std::cout << "Data after labeling" << std:: endl;
+//                     // for(uint8_t i = 0; i < ROW; i++){
+//                     //     for(uint8_t j = 0; j < COL; j++){
+//                     //         std::cout << label[i][j] << " ";
+//                     //     }
+//                     //     std::cout << std::endl;
+//                     // }
+
+//                 }
+
+//             }
+//             //std::cout << std::endl;
+//         }
+
+//         // std::cout << "Merge Table Before Solve" << std:: endl;
+//         // for (uint8_t i=0; i < MERGETABLE_SIZE; ++i) {
+//         //     std::cout << mt[i] << "  ";
+//         // }
+//         // std::cout << std::endl;
+
+//         //solve merge
+//         for (uint8_t i=0; i < MERGETABLE_SIZE; ++i) {
+//         	if(mt[i]==0) break;
+//             mt[i] = mt[mt[i] - 1];
+//         }
+
+//         for (uint8_t i=0; i < MERGETABLE_SIZE; ++i) {
+//             if(mt[i]==0) break;
+//             if(mt_reduced[mt[i]-1] == 0){
+//                 ++num_islands;
+//                 mt_reduced[mt[i]-1] = num_islands;
+//             }
+//             mt[i] = mt_reduced[mt[i]-1];
+//         }
+
+//         // std::cout << "Merge Table Solved" << std:: endl;
+//         // for (uint8_t i=0; i < MERGETABLE_SIZE; ++i) {
+//         //     std::cout << mt[i] << "  ";
+//         // }
+//         // std::cout << std::endl;
+
+
+//         //second scan
+//         //change the labels according to merge table
+//         write_label_rows: for(uint8_t i = 0; i < ROW; i++){
+//             write_label_cols: for(uint8_t j = 0; j < COL; j++){
+//                 stream_islands_labels << ( label[i][j] ? mt[label[i][j]-1] : 0 );
+//             }
+//         }
+
+//         // std::cout << "Data after island_detection" << std:: endl;
+//         // for(uint8_t i = 0; i < ROW; i++){
+//         //     for(uint8_t j = 0; j < COL; j++){
+//         //         std::cout << (label[i][j] ? mt[label[i][j]-1] : 0) << " ";
+//         //     }
+//         //     std::cout << std::endl;
+//         // }
+        
+
+//         //output to downstream
+// 		stream_num_islands << num_islands;
+//         // std::cout << "Number of islands: " << num_islands << std::endl;
+
+// }
+
+struct MtUpdate {
+    int32_t index;
+    int32_t value;
+};
+
+hls::stream<MtUpdate> stream_top;
+hls::stream<MtUpdate> stream_left;
+#if EIGHTWAY_NEIGHBOR == 1
+hls::stream<MtUpdate> stream_top_left;
+hls::stream<MtUpdate> stream_top_right;
+#endif
+
+void island_detection_2d(hls::stream<vec_int32_16> & merged_integrals,
+                         hls::stream<vec_int32_16> & island_output,
+                         hls::stream<int16_t> & stream_num_islands,
+                         hls::stream<int16_t> & stream_islands_labels) {
+
+        //initializing variables
+        const int max_tripcount_top = MAX_UPDATES;
+        const int max_tripcount_left = MERGETABLE_SIZE;
+        int32_t data[ROW*COL] = {0};
+        #pragma HLS ARRAY_PARTITION variable=data cyclic factor=16 dim=1
+
+        int32_t label[ROW][COL] = {0};
+
+        vec_int32_16 integral, label_downstream;
+        int32_t label_tmp = 0, num_islands = 0;
+        int32_t top = 0, top_left = 0, top_right = 0, left = 0;
+        int32_t count_top = 0, count_left = 0, count_top_left = 0, count_top_right = 0;
+        int32_t prev_label = 0, current_label = 0;
+        MtUpdate upd;
+
+        // std::cout << "Data before island_detection" << std:: endl;
+        //read in data
+        read_rows: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+            read_cols: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+                integral = merged_integrals.read();
+
+                if (i == INTEGRAL_NUM) {
+                    for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+					    #pragma HLS UNROLL FACTOR=16
+                        data[a*NUM_CHANNELS + c] = integral[c];
+                        // std::cout << data[a*NUM_CHANNELS + c] << " ";
+                        // if((a*NUM_CHANNELS + c)>0 && (a*NUM_CHANNELS + c) % 10 == 9){
+                        //     std::cout << std:: endl;
+                        // }
+                    }
+                }
+
+                //output integral to downstream
+                island_output << integral;
+            }
+        }
+
+        
+
+        //forward tracing
+        //assign labels to each block
+
+        //middle section
+        label_rows: for(uint8_t i = 0; i < ROW; i++){
+            label_cols: for(uint8_t j = 0; j < COL; j++){
+                #pragma HLS PIPELINE II=1
+                if(data[i*COL + j]){ //check if current blob is white
+                    
+                    // std::cout << "Labels in first scan" << std:: endl;
+                    // for(uint8_t i = 0; i < ROW; i++){
+                    //     for(uint8_t j = 0; j < COL; j++){
+                    //         std::cout << label[i][j] << " ";
+                    //     }
+                    //     std::cout << std::endl;
+                    // }
+
+                    uint8_t assigned_flag;
+
+                    //research Q1: eightway_neighbor condition inside if block vs inside top_left & top_right conditions no improvement
+                    //research Q2: can we set assigned_flag in parallel as checking the neighbors(checking i,j, and labels directly for assigned_flag) no improvement
+                    //runtime vs resource
+                    #if EIGHTWAY_NEIGHBOR == 1
+                        //scan neighbors
+                        top = (i-1 >= 0 && label[i-1][j] > 0) ? label[i-1][j] : MERGETABLE_SIZE;
+                        left = (j-1 >= 0 && prev_label > 0) ? prev_label : MERGETABLE_SIZE;
+                        top_left = (i-1 >= 0 && j-1 >= 0 && label[i-1][j-1] > 0) ? label[i-1][j-1] : MERGETABLE_SIZE; 
+                        top_right = (i-1 >= 0 && j+1 < COL && label[i-1][j+1] > 0) ? label[i-1][j+1] : MERGETABLE_SIZE;
+                        
+
+                        assigned_flag = ((i-1 >= 0 && j-1 >= 0  && label[i-1][j-1] > 0)  || (i-1 >= 0 && label[i-1][j] > 0) || 
+                                         (i-1 >= 0 && j+1 < COL && label[i-1][j+1] > 0) || (j-1 >= 0 && prev_label > 0));
+
+                        //update label and merge table
+                        current_label = assigned_flag ? std::min(std::min(top_left, top), std::min(top_right, left)) : label_tmp + 1;
+                        // label[i][j] = assigned_flag ? std::min(std::min(top_left, top), std::min(top_right, left)) : label_tmp + 1;
+                        // mt[label[i][j]-1] = assigned_flag ? mt[label[i][j]-1] : label_tmp + 1;
+                        if (!assigned_flag) {
+                            stream_top << MtUpdate{ current_label - 1, label_tmp + 1 };
+                            ++count_top;
+                            // std::cout << "top: " << current_label - 1 << " " << label_tmp + 1 << std::endl;
+                        }
+                        label_tmp = assigned_flag ? label_tmp : label_tmp + 1;
+
+                        //top left
+                        if (top_left!=MERGETABLE_SIZE) {
+                            // mt[label[i-1][j-1]-1] = label[i][j];
+                            stream_top_left << MtUpdate{ label[i-1][j-1] - 1, current_label };
+                            ++count_top_left;
+                            // std::cout << "top_left: " << label[i-1][j-1] - 1 << " " << current_label << std::endl;
+                        }
+                        //top
+                        if (top!=MERGETABLE_SIZE) {
+                            // mt[label[i-1][j]-1] = label[i][j];
+                            stream_top << MtUpdate{ label[i - 1][j] - 1, current_label };
+                            ++count_top;
+                            // std::cout << "top: " << label[i-1][j] - 1 << " " << current_label << std::endl;
+                        }
+                        //top right
+                        if (top_right!=MERGETABLE_SIZE) {
+                            // mt[label[i-1][j+1]-1] = label[i][j];
+                            stream_top_right << MtUpdate{ label[i - 1][j + 1] - 1, current_label };
+                            ++count_top_right;
+                            // std::cout << "top_right: " << label[i-1][j+1] - 1 << " " << current_label << std::endl;
+                        }
+                        //left
+                        if (left!=MERGETABLE_SIZE) {
+                            // mt[label[i][j-1]-1] = label[i][j];
+                            stream_left << MtUpdate{ prev_label - 1, current_label };
+                            ++count_left;
+                            // std::cout << "left: " << prev_label - 1 << " " << current_label << std::endl;
+                        }
+
+                        prev_label = current_label;               
+                        label[i][j] = current_label;
+                    #else
+                        //scan neighbors
+                        top = (i-1 >= 0 && j >= 0 && label[i-1][j] > 0) ? label[i-1][j] : MERGETABLE_SIZE;
+                        left = (j-1 >= 0 && prev_label > 0) ? prev_label : MERGETABLE_SIZE;
+                        assigned_flag = ((i-1 >= 0 && j >= 0 && label[i-1][j] > 0) || (j-1 >= 0 && prev_label > 0));
+                        
+                        //update label and merge table
+                        current_label = assigned_flag ? ((top < left) ? top : left)
+                                                      : label_tmp + 1;
+                        // mt[label[i][j]-1] = assigned_flag ? mt[label[i][j]-1] : label_tmp + 1;
+                        if (!assigned_flag) {
+                            stream_top << MtUpdate{ current_label - 1, label_tmp + 1 };
+                            ++count_top;
+                        }
+
+                        label_tmp = assigned_flag ? label_tmp : label_tmp + 1;
+
+                        
+
+                        //top
+                        if (top!=MERGETABLE_SIZE) {
+                            // mt[label[i-1][j]-1] = label[i][j];
+                            stream_top << MtUpdate{ label[i - 1][j] - 1, current_label };
+                            ++count_top;
+                        }
+
+                        //left
+                        if (left!=MERGETABLE_SIZE) {
+                            // mt[label[i][j-1]-1] = label[i][j];
+                            stream_left << MtUpdate{ prev_label - 1, current_label };
+                            ++count_left;
+                        }
+
+                    prev_label = current_label;               
+                    label[i][j] = current_label;
+                        
+                    #endif
+
+                    
+
+                    // std::cout << "Labels in first scan" << std:: endl;
+                    // for(uint8_t i = 0; i < ROW; i++){
+                    //     for(uint8_t j = 0; j < COL; j++){
+                    //         std::cout << label[i][j] << " ";
+                    //     }
+                    //     std::cout << std::endl;
+                    // }
+
+
+                }else{
+                    prev_label = 0;
+                }
+
+            }
+            //std::cout << std::endl;
+        }
+
+
+        // std::cout << "Merge Table Before Solve" << std:: endl;
+        // for (uint8_t i=0; i < MERGETABLE_SIZE; ++i) {
+        //     std::cout << mt[i] << "  ";
+        // }
+        // std::cout << std::endl;
+
+        //solve merge
+        // for (uint8_t i=0; i < MERGETABLE_SIZE; ++i) {
+        // 	if(mt[i]==0) break;
+        //     mt[i] = mt[mt[i] - 1];
+        // }
+
+        int32_t mt[MERGETABLE_SIZE] = {0}, mt_reduced[MERGETABLE_SIZE] = {0};
+        #pragma HLS bind_storage variable=mt type=RAM_2P impl=bram
+        #pragma HLS bind_storage variable=mt_reduced type=RAM_2P impl=bram
+
+        int32_t mt_pending[MERGETABLE_SIZE] = {0};
+        #pragma HLS ARRAY_PARTITION variable=mt_pending complete dim=1
+
+        
+        // for (int i = 0; i < MERGETABLE_SIZE; i++) {
+        //     #pragma HLS UNROLL
+        //     mt_pending[i] = 0;
+        // }
+
+        // std::cout << "Mt pending before first scan" << std:: endl;
+        // for (uint16_t i=0; i < MERGETABLE_SIZE; ++i) {
+        //     std::cout << mt_pending[i] << "  ";
+        // }
+        // std::cout << std::endl;
+
+        // Process TOP
+        for (uint16_t i = 0; i < count_top; ++i) {
+            #pragma HLS PIPELINE II=1
+            #pragma HLS loop_tripcount min=1 max=max_tripcount_top
+            upd = stream_top.read();
+            mt_pending[upd.index] = (mt_pending[upd.index] == 0 || upd.value < mt_pending[upd.index])
+                                ? upd.value : mt_pending[upd.index];
+        }
+
+        // Process LEFT
+        for (uint16_t i = 0; i < count_left; ++i) {
+            #pragma HLS PIPELINE II=1
+            #pragma HLS loop_tripcount min=1 max=max_tripcount_left
+            upd = stream_left.read();
+            mt_pending[upd.index] = (mt_pending[upd.index] == 0 || upd.value < mt_pending[upd.index])
+                                ? upd.value : mt_pending[upd.index];
+        }
+
+        #if EIGHTWAY_NEIGHBOR == 1
+        // Process TOP-LEFT
+        for (uint16_t i = 0; i < count_top_left; ++i) {
+            #pragma HLS PIPELINE II=1
+            #pragma HLS loop_tripcount min=1 max=max_tripcount_left
+            upd = stream_top_left.read();
+            mt_pending[upd.index] = (mt_pending[upd.index] == 0 || upd.value < mt_pending[upd.index])
+                                ? upd.value : mt_pending[upd.index];
+        }
+
+        // Process TOP-RIGHT
+        for (uint16_t i = 0; i < count_top_right; ++i) {
+            #pragma HLS PIPELINE II=1
+            #pragma HLS loop_tripcount min=1 max=max_tripcount_left
+            upd = stream_top_right.read();
+            mt_pending[upd.index] = (mt_pending[upd.index] == 0 || upd.value < mt_pending[upd.index])
+                                ? upd.value : mt_pending[upd.index];
+        }
+        #endif
+
+        // std::cout << "Mt pending" << std:: endl;
+        // for (uint16_t i=0; i < MERGETABLE_SIZE; ++i) {
+        //     std::cout << mt_pending[i] << "  ";
+        // }
+        // std::cout << std::endl;
+
+        for (uint16_t i = 0; i < MERGETABLE_SIZE; i++) {
+            if (mt_pending[i] == 0) break;
+            mt[i] = mt_pending[mt_pending[i] - 1];
+        }
+
+        for (uint16_t i=0; i < MERGETABLE_SIZE; ++i) {
+            if(mt[i]==0) break;
+            if(mt_reduced[mt[i]-1] == 0){
+                ++num_islands;
+                mt_reduced[mt[i]-1] = num_islands;
+            }
+            mt[i] = mt_reduced[mt[i]-1];
+        }
+
+        // std::cout << "Merge Table Solved" << std:: endl;
+        // for (uint8_t i=0; i < MERGETABLE_SIZE; ++i) {
+        //     std::cout << mt[i] << "  ";
+        // }
+        // std::cout << std::endl;
+
+        //second scan
+        //change the labels according to merge table
+        write_label_rows: for(uint8_t i = 0; i < ROW; i++){
+            write_label_cols: for(uint8_t j = 0; j < COL; j++){
+                stream_islands_labels << ( label[i][j] ? mt[label[i][j]-1] : 0 );
+            }
+        }
+
+        // std::cout << "Data after island_detection" << std:: endl;
+        // for(uint8_t i = 0; i < ROW; i++){
+        //     for(uint8_t j = 0; j < COL; j++){
+        //         std::cout << ( label[i][j] ? mt[label[i][j]-1] : 0 ) << " ";
+        //     }
+        //     std::cout << std::endl;
+        // }
+        
+
+        //output to downstream
+		stream_num_islands << num_islands;
+        std::cout << "Number of islands: " << num_islands << std::endl;
+
+}
+
+
+// void centroiding(hls::stream<vec_int32_16> & merged_integrals,
+//                  hls::stream<vec_int32_16> & island_output,
+//                  hls::stream<vec_int32_16> & centroiding_output,
+//                  hls::stream<uint8_t> & stream_num_islands,
+//                  hls::stream<Centroid> & stream_centroid) {
+
+    
+//     uint16_t position_tmp;
+//     uint16_t signal_tmp;  
+//     vec_int32_16 integral;
+//     Centroid centroid;
+//     centroiding_integrals: for (uint8_t i = 0; i < NUM_INTEGRALS; ++i) {
+//         centroiding_alphas: for (uint8_t a = 0; a < NUM_ALPHAS; ++a) {
+//             integral = island_output.read();
+
+//             if (i == INTEGRAL_NUM) {
+
+//                 centroiding_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
+//                     uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
+//                     uint16_t signal = (a == 0 && c == 0) ? 0 : signal_tmp;
+//                     const uint16_t pos = a * NUM_CHANNELS + c;
+//                     position += pos * integral[c];
+//                     signal += integral[c];
+//                     position_tmp = position;
+//                     signal_tmp = signal;
+//                 }
+//             }
+
+//             centroiding_output << integral;
+//         }
+//         if (i == INTEGRAL_NUM) {
+//             centroid.count = stream_num_islands.read();        
+//             centroid.position = (centroid.count > 0) ? position_tmp / signal_tmp : 0;
+//             centroid.signal = (centroid.count > 0) ? signal_tmp : 0;
+//             stream_centroid << centroid;
+//         }
+//     }
+
+// }
+                
+
+//next step look into 2d centroid
+void centroiding(hls::stream<vec_int32_16> & merged_integrals,
+                 hls::stream<vec_int32_16> & island_output,
                  hls::stream<int16_t> & stream_num_islands,
+                 hls::stream<int16_t> & stream_islands_labels,
                  hls::stream<vec_int32_16> & centroiding_output,
                  hls::stream<Centroid> & stream_centroid) {
     uint16_t position_tmp;
@@ -170,6 +723,13 @@ void centroiding(hls::stream<vec_int32_16> & island_output,
             integral = island_output.read();
 
             if (i == INTEGRAL_NUM) {
+
+                read_label_rows: for(uint8_t i = 0; i < ROW; i++){
+                    read_label_cols: for(uint8_t j = 0; j < COL; j++){
+                        stream_islands_labels.read();
+                    }
+                }
+
 
                 centroiding_channels: for (uint8_t c = 0; c < NUM_CHANNELS; ++c) {
                     uint16_t position = (a == 0 && c == 0) ? 0 : position_tmp;
@@ -279,12 +839,14 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
     static hls::stream<vec_int32_16> island_output;
     static hls::stream<vec_int32_16> centroiding_output;
     hls::stream<int16_t> stream_num_islands;
+    hls::stream<int16_t> stream_islands_labels;
     hls::stream<Centroid> stream_centroid;
     #pragma HLS STREAM variable=zeroed_integrals depth=4
     #pragma HLS STREAM variable=merged_integrals depth=20
     #pragma HLS STREAM variable=island_output depth=20
     #pragma HLS STREAM variable=centroiding_output depth=20
     #pragma HLS STREAM variable=stream_num_islands depth=1
+    #pragma HLS STREAM variable=stream_islands_labels depth=1
     #pragma HLS STREAM variable=stream_centroid depth=1
 
 	#pragma HLS DATAFLOW
@@ -345,8 +907,13 @@ void dataflow(const SW_Data_Packet * input_data_packet0,
     merge_integrals(zeroed_integrals,
                     merged_integrals);
 
-    island_detection(merged_integrals,island_output,stream_num_islands);
-    centroiding(island_output,stream_num_islands,centroiding_output,stream_centroid);
+    #if TWO_DIMENSION == 1
+        island_detection_2d(merged_integrals,island_output,stream_num_islands,stream_islands_labels);
+        centroiding(merged_integrals,island_output,stream_num_islands,stream_islands_labels,centroiding_output,stream_centroid);
+    #else
+        island_detection(merged_integrals,island_output,stream_num_islands);
+    #endif
+    
     write_integrals(centroiding_output, output_integrals);
     write_centroid(stream_centroid, centroid);
     

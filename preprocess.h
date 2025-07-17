@@ -13,6 +13,13 @@ typedef hls::vector<uint32_t, 16> vec_uint32_16;
 #define NUM_INTEGRALS 4
 #define NUM_ALPHAS 5
 #define INTEGRAL_NUM 3
+#define TWO_DIMENSION 1
+#define ROW 8
+#define COL 10
+#define MERGETABLE_SIZE (((ROW + 1)/ 2) * ((COL + 1)/ 2))
+#define EIGHTWAY_NEIGHBOR 1
+#define MAX_UPDATES MERGETABLE_SIZE * 2
+
 
 extern "C" {
     void preprocess(

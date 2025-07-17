@@ -117,14 +117,14 @@ int peds_dat_to_arrays(int fd, vec_uint16_16 * all_peds){
 }
 
 int initialize_inputs(struct SW_Data_Packet * data_packet, vec_uint16_16 * all_peds) {
-    int data_packet_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/EventStream.dat", 0, "r");
+    int data_packet_fd = open("/home/research/qinzhounick/Documents/fpga_pipeline/adapt_fpga/EventStream.dat", 0, "r");
     if (data_packet_fd == -1) {
         perror("open");
     }
 
     data_packet_dat_to_struct(data_packet_fd, data_packet);
 
-    int peds_fd = open("/home/warehouse/msudvarg/capstone_sp23/src/peds.dat", 0, "r");
+    int peds_fd = open("/home/research/qinzhounick/Documents/fpga_pipeline/adapt_fpga/peds.dat", 0, "r");
     if (peds_fd == -1) {
         perror("open");
     }
@@ -180,7 +180,7 @@ int write_output(int fd, const char ** bounds, vec_int32_16 *integrals, struct S
 }
 
 int produce_output(const char ** bounds, vec_int32_16 *integrals, struct SW_Data_Packet * data_packet) {
-    int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
+    int output_fd = open("/home/research/qinzhounick/Documents/fpga_pipeline/adapt_fpga/output.txt", O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }
@@ -241,7 +241,7 @@ int main()
                 (struct Centroid *) &centroid
                 );
 
-    int output_fd = open("/home/research/msudvarg/capstone_sp23/src/output.txt", O_CREAT | O_RDWR, 0666);
+    int output_fd = open("/home/research/qinzhounick/Documents/fpga_pipeline/adapt_fpga/output.txt", O_CREAT | O_RDWR, 0666);
     if (output_fd == -1) {
         perror("open");
     }
